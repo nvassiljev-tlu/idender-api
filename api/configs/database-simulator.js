@@ -59,10 +59,79 @@ const suggestion_reactions = [
   { id: 2, reaction: 0, suggestion_id: 2, user_id: 3 }, // dislike
 ];
 
+const users = [
+  {
+    "id": "UUID1",
+    "email": "john.doe@tpl.edu.ee",
+    "is_active": true,
+    "created_at": "2025-01-01T08:00:00",
+    "first_name": "John",
+    "last_name": "Doe"
+  },
+  {
+    "id": "UUID2",
+    "email": "jane.smith@tpl.edu.ee",
+    "is_active": true,
+    "created_at": "2025-01-05T09:00:00",
+    "first_name": "Jane",
+    "last_name": "Smith"
+  },
+  {
+    "id": "UUID3",
+    "email": "admin.user@tpl.edu.ee",
+    "is_active": true,
+    "created_at": "2025-01-10T10:00:00",
+    "first_name": "Admin",
+    "last_name": "User"
+  }
+]
+
+const scopes = [
+  { "id": 1, "name": "auth:access" },
+  { "id": 2, "name": "auth:admin" },
+  { "id": 3, "name": "suggest:create" },
+  { "id": 4, "name": "suggest:comment" },
+  { "id": 5, "name": "suggest:react" },
+  { "id": 6, "name": "news:create" },
+  { "id": 7, "name": "scope:manage" },
+  { "id": 8, "name": "user:ban" }
+]
+
+const user_scopes = [
+  { "userId": "UUID1", "scopeId": 1 },
+  { "userId": "UUID2", "scopeId": 1 },
+  { "userId": "UUID3", "scopeId": 1 },
+  { "userId": "UUID3", "scopeId": 2 },
+  { "userId": "UUID3", "scopeId": 6 }
+]
+
+const votes = [
+  { "id": "UUID4", "ideaId": "1", "userId": "UUID1" },
+  { "id": "UUID5", "ideaId": "2", "userId": "UUID2" }
+]
+
+const sessions = [
+  {
+    "id": "UUID6",
+    "sid": "UUID7",
+    "userId": "UUID1",
+    "expires": "2025-06-01T00:00:00",
+    "data": "{\"email\":\"john.doe@tpl.edu.ee\"}",
+    "createdAt": "2025-01-01T08:00:00",
+    "updatedAt": "2025-01-01T08:00:00"
+  }
+]
+
+
 module.exports = {
   categories,
   suggestions,
   suggestions_categories,
   suggestion_comments,
   suggestion_reactions,
+  users,
+  scopes,
+  user_scopes,
+  votes,
+  sessions
 };
