@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "NODE_ENV=development nodemon server.js",
     "start:staging": "NODE_ENV=staging nodemon server.js",
-    "start:prod": "NODE_ENV=prod node server.js"
+    "start:prod": "NODE_ENV=prod nodemon server.js"
   },
   "author": "Nikita Vassiljev, Ksaveri Petrov, Alina Rohozinska, Aleksandra Gluhhova, Jonas Oliveira, Edgar-Adrian Bojev",
   "license": "ISC",
