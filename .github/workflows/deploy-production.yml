@@ -1,4 +1,4 @@
-name: Deploy to Hetzner Staging
+name: Deploy to Hetzner Production
 
 on:
   push:
