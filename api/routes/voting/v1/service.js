@@ -1,4 +1,4 @@
-const db = require('../../../../configs/database-simulator.js');
+const {users, suggestions, scopes, suggestion_reactions} = require('../../../../configs/database-simulator.js');
 const crypto = require('crypto');
 
 class VotingService {
