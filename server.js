@@ -8,7 +8,7 @@ let envFile;
 
 if (env === 'development') {
   envFile = '.env.dev';
-} else if (env === 'prod') {
+} else if (env === 'prod' || env === 'production') {
   envFile = '.env.production';
 } else {
   envFile = '.env.staging';
