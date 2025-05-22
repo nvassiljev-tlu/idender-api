@@ -24,4 +24,4 @@ jobs:
             git fetch origin
             git reset --hard origin/develop
             npm install
-            pm2 restart idender-production
+            pm2 restart idender-prod
