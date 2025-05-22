@@ -87,15 +87,21 @@ const users = [
 ]
 
 const scopes = [
-  { "id": 1, "name": "auth:access" },
-  { "id": 2, "name": "auth:admin" },
-  { "id": 3, "name": "suggest:create" },
-  { "id": 4, "name": "suggest:comment" },
-  { "id": 5, "name": "suggest:react" },
-  { "id": 6, "name": "news:create" },
-  { "id": 7, "name": "scope:manage" },
-  { "id": 8, "name": "user:ban" }
-]
+  { id: 1, name: "auth:access" },
+  { id: 2, name: "user:admin" },
+  { id: 3, name: "users:moderate" },
+  { id: 4, name: "users:scopes" },
+  { id: 5, name: "ideas:read" },
+  { id: 6, name: "ideas:create" },
+  { id: 7, name: "ideas:update" },
+  { id: 8, name: "ideas:moderate" },
+  { id: 9, name: "comments:read" },
+  { id: 10, name: "comments:create" },
+  { id: 11, name: "comments:moderate" },
+  { id: 12, name: "voting:read" },
+  { id: 13, name: "voting:vote" }
+];
+
 
 const user_scopes = [
   { "userId": "UUID1", "scopeId": 1 },
