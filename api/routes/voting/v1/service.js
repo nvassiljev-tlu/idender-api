@@ -1,12 +1,12 @@
-const {users, suggestions, scopes, suggestion_reactions} = require('../../../../configs/database-simulator.js');
+const {users, suggestions, scopes, suggestion_reactions} = require('../../../configs/database-simulator.js');
 const crypto = require('crypto');
 
 class VotingService {
   // get stats about all posts (likes and dislikes)
-  static getGlobalInfo() {
+  static getGlobalInfo() { 
     const ideasWithReactions = {};
 
-    for (const reaction of db.suggestion_reactions) {
+    for (const reaction of suggestion_reactions) {
       const ideaId = reaction.suggestion_id;
       if (!ideasWithReactions[ideaId]) {
         ideasWithReactions[ideaId] = { likes: 0, dislikes: 0 };
@@ -27,16 +27,16 @@ class VotingService {
 
   // get data about one post (likes and dislikes)
   static getVotesForIdea(ideaId) {
-    return db.suggestion_reactions.filter(v => v.suggestion_id === ideaId);
+    return suggestion_reactions.filter(v => v.suggestion_id === ideaId);
   }
 
   // find next post that the user did not vote on
   static getNextIdea(userId) {
-    const votedIdeaIds = db.suggestion_reactions
+    const votedIdeaIds = suggestion_reactions
       .filter(r => r.user_id === userId)
       .map(r => r.suggestion_id);
 
-    const availableIdeas = db.suggestions.filter(
+    const availableIdeas = suggestions.filter(
       s => !votedIdeaIds.includes(s.id) && s.status === 1 // only active posts
     );
 
@@ -57,13 +57,13 @@ class VotingService {
     }
 
     // check if post exists
-    const ideaExists = db.suggestions.some(s => s.id === ideaId);
+    const ideaExists = suggestions.some(s => s.id === ideaId);
     if (!ideaExists) {
       throw new Error("Idea does not exist");
     }
 
     // add a new reaction
-    db.suggestion_reactions.push({
+    suggestion_reactions.push({
       id: crypto.randomUUID(),
       reaction, // 1 for like, 0 for dislike
       suggestion_id: ideaId,

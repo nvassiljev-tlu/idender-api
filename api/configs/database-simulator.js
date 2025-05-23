@@ -104,7 +104,9 @@ const scopes = [
 
 
 const user_scopes = [
-  { "userId": "UUID1", "scopeId": 1 },
+  { "userId": "UUID1", "scopeId": 1,},
+  { "userId": "UUID1", "scopeId": 13,},
+  { "userId": "UUID1", "scopeId": 12,},
   { "userId": "UUID2", "scopeId": 1 },
   { "userId": "UUID3", "scopeId": 1 },
   { "userId": "UUID3", "scopeId": 2 },
