@@ -88,6 +88,7 @@ const users = [
 
 const scopes = [
   { id: 1, name: "auth:access" },
+  { id: 14, name: "auth:signup"},
   { id: 2, name: "user:admin" },
   { id: 3, name: "users:moderate" },
   { id: 4, name: "users:scopes" },
@@ -128,6 +129,33 @@ const sessions = [
   }
 ]
 
+const otps = [
+  {
+    id: "UUID8",
+    email: "john.doe@tpl.edu.ee",
+    code: "123456",
+    created_at: new Date("2025-01-01T08:00:00"),
+    expires_at: new Date("2025-01-01T08:05:00"),
+    verified: false
+  },
+
+  {
+    id: "UUID9",
+    email: "test.email@tpl.edu.ee",
+    code: "654321",
+    created_at: new Date("2025-01-01T08:00:00"),
+    expires_at: new Date("2025-01-01T08:05:00"),
+    verified: false
+  },
+  {
+    id: "UUID10",
+    email: "another.email@tpl.edu.ee",
+    code: "987654",
+    created_at: new Date("2025-01-01T08:00:00"),
+    expires_at: new Date("2025-01-01T08:05:00"),
+    verified: true
+  },
+]
 
 module.exports = {
   categories,
@@ -139,5 +167,6 @@ module.exports = {
   scopes,
   user_scopes,
   votes,
-  sessions
+  sessions,
+  otps
 };
