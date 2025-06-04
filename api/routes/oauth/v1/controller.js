@@ -19,6 +19,7 @@ class OAuthController {
         secure: false,
         sameSite: 'Lax'
       });
+
       res.status(200).json(createResponse(200, { message: '[oAuth] User logged in successfully.' }));
     } catch (err) {
       res.status(401).json(createResponse(401, null, err.message));
@@ -44,9 +45,9 @@ class OAuthController {
     }
   }
 
-  static getMe(req, res) {
+  static async getMe(req, res) {
     try {
-      const session = OAuthService.getSession(req.cookies.sid);
+      const session = await OAuthService.getSession(req.cookies.sid);
       res.status(200).json(createResponse(200, session));
     } catch (err) {
       res.status(401).json(createResponse(401, null, err.message));

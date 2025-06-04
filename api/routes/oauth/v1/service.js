@@ -54,6 +54,7 @@ static async login(email, password) {
   if (!user) throw new Error('[oAuth] Invalid credentials');
 
   const match = await bcrypt.compare(password, user.password);
+
   if (!match) throw new Error('[oAuth] Invalid credentials');
 
   const sid = crypto.randomUUID();
@@ -118,7 +119,7 @@ static async login(email, password) {
     return otp;
 }
 
-  static getSession(sid) {
+  static async getSession(sid) {
     const session = sessions.find(s => s.sid === sid);
     if (!session) throw new Error('[oAuth] Session not found');
     const user = users.find(u => u.id === session.userId);
