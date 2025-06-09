@@ -79,20 +79,3 @@ module.exports = VotingService;
 
 
 
-//Mida teeb: Andmetöötluse loogika (business logic). See fail suhtleb "andmebaasiga" (database-simulator.js) ja teostab hääletamisega seotud toiminguid.
-//Meetodid:
-
-//getGlobalInfo() – Loendab kõigi postituste like’id ja dislike’id.
-
-//getVotesForIdea(ideaId) – Tagastab kõik reaktsioonid (like’d/dislike’d) konkreetsele postitusele.
-
-//getNextIdea(userId) – Leiab juhusliku postituse, mida kasutaja pole veel hääletanud.
-
-//vote(ideaId, userId, reaction) – Lisab postitusele uue reaktsiooni (like või dislike).
-
-//Seosed:
-
-//Kasutab andmeid database-simulator.js failist (suggestions, suggestion_reactions).
-
-//Kutsutakse välja controller.js failist toimingute teostamiseks.
-

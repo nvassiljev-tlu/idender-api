@@ -70,37 +70,3 @@ class VotingController {
 }
 
 module.exports = VotingController;
-
-
-
-
-//{
-//  "status": 200,
- // "data": {
- //   "id": 1,
- //   "title": "Improve WiFi",
- //   "desctiption": "WiFi speed in the office needs improvement.",
- //   "is_anonymus": 0,
- //   "created_at": "2025-01-01T10:00:00Z",
- //   "status": 1,
- //   "user_id": 1
- // }
-//}
-
-
-//Mida teeb: Töötleb HTTP-päringuid, kutsub välja meetodid service.js failist ja tagastab vastused kliendile.
-//Meetodid:
-
-//getGlobalVotingInfo – Tagastab kõigi postituste statistika (kasutades VotingService.getGlobalInfo).
-
-//getVotesForIdea – Tagastab konkreetse postituse reaktsioonid (kasutades VotingService.getVotesForIdea).
-
-//getNextIdea – Tagastab järgmise hääletamiseks sobiva postituse (kasutades VotingService.getNextIdea).
-
-//submitVoteForIdea – Salvestab like/dislike (kasutades VotingService.vote).
-
-//Seosed:
-
-//Saab päringud router.js failist ja edastab need VotingService töötluseks.
-
-//Kasutab createResponse (middleware) vastuste vormindamiseks.
