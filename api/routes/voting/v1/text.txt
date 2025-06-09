@@ -1,0 +1,17 @@
+router.js – Määrab marsruudid ja seob päringud kontrolleriga.
+
+database-simulator.js – Säilitab andmeid (andmebaasi simulaator).
+
+service.js – Andmetöötluse loogika (nt like’ide lugemine, postituste otsimine).
+
+controller.js – Töötleb päringuid ja vormindab vastused.
+
+requireScopes.js – Kontrollib kasutaja õigusi.
+
+
+
+
+
+ÜLESANDE
+
+

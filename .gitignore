@@ -2,5 +2,4 @@ node_modules/
 .env.dev
 package-lock.json
 package.json
-requireScopes.js
-database-simulator.js
+requireScopes.json

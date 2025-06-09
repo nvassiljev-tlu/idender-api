@@ -15,7 +15,7 @@ class VotingController {
     try {
       const ideaId = req.params.idea_id;
       const data = VotingService.getVotesForIdea(ideaId);
-      res.status(200).json(createResponse(200, data));
+      res.status(200).json(createResponse(201, data));
     } catch (e) {
       res.status(500).json(createResponse(500, null, e.message));
     }
@@ -23,7 +23,7 @@ class VotingController {
 
   static getNextIdea(req, res) {
     try {
-      const userId = req.user?.id;
+      const userId = req.userId;
       if (!userId) throw new Error("User not authenticated");
 
       const idea = VotingService.getNextIdea(userId);
@@ -39,8 +39,8 @@ class VotingController {
   static submitVoteForIdea(req, res) {
     try {
       const ideaId = req.params.idea_id;
-      const userId = req.user?.id;
-      const { reaction } = req.body; // Awaiting reaction (0 or 1) in request body
+      const userId = req.userId;
+      const { reaction } = req.body;
 
       if (!userId) throw new Error("User not authenticated");
       if (reaction === undefined) throw new Error("Reaction is required");
@@ -51,10 +51,25 @@ class VotingController {
       res.status(400).json(createResponse(400, null, e.message));
     }
   }
+
+  static getVotingIntensity(req, res) {
+    try {
+      
+      //const startTime = new Date('2025-05-23T09:30:00Z');
+      
+      
+      const startTime = new Date();
+      startTime.setMinutes(startTime.getMinutes() - 10);
+      
+      const data = VotingService.getVotingIntensity(startTime);
+      res.status(200).json(createResponse(200, data));
+    } catch (e) {
+      res.status(500).json(createResponse(500, null, e.message));
+    }
+  }
 }
 
 module.exports = VotingController;
-
 
 
 
@@ -71,3 +86,21 @@ module.exports = VotingController;
  //   "user_id": 1
  // }
 //}
+
+
+//Mida teeb: Töötleb HTTP-päringuid, kutsub välja meetodid service.js failist ja tagastab vastused kliendile.
+//Meetodid:
+
+//getGlobalVotingInfo – Tagastab kõigi postituste statistika (kasutades VotingService.getGlobalInfo).
+
+//getVotesForIdea – Tagastab konkreetse postituse reaktsioonid (kasutades VotingService.getVotesForIdea).
+
+//getNextIdea – Tagastab järgmise hääletamiseks sobiva postituse (kasutades VotingService.getNextIdea).
+
+//submitVoteForIdea – Salvestab like/dislike (kasutades VotingService.vote).
+
+//Seosed:
+
+//Saab päringud router.js failist ja edastab need VotingService töötluseks.
+
+//Kasutab createResponse (middleware) vastuste vormindamiseks.
