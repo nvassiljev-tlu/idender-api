@@ -36,9 +36,9 @@ class OAuthController {
     }
   }
 
-  static verifyOtp(req, res) {
+  static async verifyOtp(req, res) {
     try {
-      OAuthService.verifyOtp(req.body.email, req.body.code);
+      await OAuthService.verifyOtp(req.body.email, req.body.code);
       res.status(200).json(createResponse(200, { message: '[oAuth] OTP verified.' }));
     } catch (err) {
       res.status(400).json(createResponse(400, null, err.message));

@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const { users, user_scopes, sessions, otps, scopes } = require('../../../configs/database-simulator');
+const db = require('../../../middlewares/database')
+const { DateTime } = require('luxon');
 
 class OAuthService {
 
@@ -10,12 +12,16 @@ class OAuthService {
   if (password.length > 64) throw new Error('Password too long.');
   if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) throw new Error('Invalid email format.');
   if (!email.endsWith('@tpl.edu.ee')) throw new Error('You are not allowed to use this email.');
-  if (users.some(u => u.email === email)) throw new Error('Email already used.');
+  const [rows] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+  if (rows.length > 0) throw new Error('Email already used.');
 
   const hashedPassword = await bcrypt.hash(password, 10);
+  const user_id = crypto.randomUUID();
+  const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+  const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
 
   const user = {
-    id: 'UUID4' || crypto.randomUUID(),
+    id: user_id,
     email,
     first_name,
     last_name,
@@ -32,16 +38,24 @@ class OAuthService {
   const otp = {
     email,
     code,
-    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-    created_at: new Date(),
+    expires_at: Math.floor(nowTallinn.plus({ minutes: 10 })),
+    created_at: unixTimestampMilliseconds,
     id: crypto.randomUUID(),
-    verified: false
+    verified: 0
   };
 
-  users.push(user);
-
-  user_scopes.push(newScopes);
-  otps.push(otp);
+  await db.promise().execute('INSERT INTO users (email, first_name, last_name, password, is_active, id) VALUES (?, ?, ?, ?, ?, ?)', [email, first_name, last_name, hashedPassword, true, user_id]).catch(err => {
+    console.error('Error inserting user:', err);
+    throw new Error('Database error while inserting user.');
+  });
+  await db.promise().execute('INSERT INTO user_scope (userId, scopeId) VALUES (?, ?)', [user.id, newScopes.scopeId]).catch(err => {
+    console.error('Error inserting user scope:', err);
+    throw new Error('Database error while inserting user scope.');
+  });
+  await db.promise().execute('INSERT INTO otp_code (id, email, code, expiresAt, createdAt, verified) VALUES (?, ?, ?, ?, ?, ?)', [otp.id, otp.email, otp.code, otp.expires_at, otp.created_at, 0]).catch(err => {
+    console.error('Error inserting OTP:', err);
+    throw new Error('Database error while inserting OTP.');
+  });
 
   const userWithoutPassword = { ...user };
   delete userWithoutPassword.password;
@@ -50,24 +64,29 @@ class OAuthService {
 
 
 static async login(email, password) {
-  const user = users.find(u => u.email === email && u.is_active);
-  if (!user) throw new Error('[oAuth] Invalid credentials');
+  const [rows] = await db.promise().query('SELECT * FROM users WHERE email = ? AND is_active = ?', [email, 1]);
+  if (rows.length === 0) throw new Error('[oAuth] Invalid credentials');
+  const user = rows[0];
+
+  if (user && user.is_active === 0) {
+    throw new Error('[oAuth] User is not active');
+  }
 
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) throw new Error('[oAuth] Invalid credentials');
 
   const sid = crypto.randomUUID();
-  const now = new Date();
-  const expires = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
+  const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+  const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
+  const expires = nowTallinn.plus({ days: 1 }).setZone('Europe/Tallinn');
 
   const session = {
-    id: crypto.randomUUID(),
     sid,
     userId: user.id,
-    createdAt: now.toISOString(),
-    updatedAt: now.toISOString(),
-    expires: expires.toISOString(),
+    createdAt: unixTimestampMilliseconds,
+    updatedAt: unixTimestampMilliseconds,
+    expires: expires.toMillis(),
     data: JSON.stringify({
       email: user.email,
       first_name: user.first_name,
@@ -75,31 +94,44 @@ static async login(email, password) {
     })
   };
 
-  sessions.push(session);
+  await db.promise().execute('INSERT INTO session (sid, userId, createdAt, updatedAt, expires, data) VALUES (?, ?, ?, ?, ?, ?)', [session.sid, session.userId, session.createdAt, session.updatedAt, session.expires, session.data]).catch(err => {
+    console.error('Error inserting session:', err);
+    throw new Error('Database error while inserting session.');
+  });
   return session;
 }
 
 
   static logout(sid) {
-    const index = sessions.findIndex(s => s.sid === sid);
-    if (index !== -1) sessions.splice(index, 1);
+    if (!sid) throw new Error('[oAuth] Session ID is required for logout.');
+
+    return db.promise().execute('DELETE FROM session WHERE sid = ?', [sid])
+      .then(() => {
+        console.log('[oAuth] User logged out successfully.');
+      })
+      .catch(err => {
+        console.error('Error during logout:', err);
+        throw new Error('[oAuth] Error during logout.');
+      });
   }
 
   
-  static verifyOtp(email, code) {
-    let otp = otps.find(o => o.email === email && o.code === code && !o.verified);
-    if (!otp) throw new Error('[oAuth] Invalid OTP code.');
+   static async verifyOtp(email, code) {
+    const [rows1] = await db.promise().query('SELECT * FROM otp_code WHERE email = ? AND code = ? AND verified = 0', [email, code]);
 
-    for (let i = otps.length - 1; i >= 0; i--) {
-        if (otps[i].email === email) {
-        otps.splice(i, 1);
-        }
+    if (rows1.length === 0) throw new Error('[oAuth] Invalid OTP code.');
+
+    const otp = rows1[0];
+    const now = DateTime.now().setZone('Europe/Tallinn');
+
+    if (otp.expiresAt < Math.floor(now.toMillis())) {
+        throw new Error('[oAuth] OTP code has expired.');
     }
 
-    otp.verified = true;
-
-    const user = users.find(u => u.email === email);
-    if (!user) throw new Error('User not found');
+    const [rows2] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+    console.log('rows2', rows2);
+    if (rows2.length === 0) throw new Error('[oAuth] User not found.');
+    const user = rows2[0];
 
     const newScopes = [
         { userId: user.id, scopeId: 1 },
@@ -111,19 +143,31 @@ static async login(email, password) {
         { userId: user.id, scopeId: 13 }
     ];
 
-    user_scopes.push(...newScopes);
+    for (const scope of newScopes) {
+      await db.promise().execute('INSERT INTO user_scope (userId, scopeId) VALUES (?, ?)', [scope.userId, scope.scopeId]).catch(err => {
+        console.error('Error inserting user scope:', err);
+        throw new Error('Database error while inserting user scope.');
+      });
+    }
 
-    const index = user_scopes.findIndex(us => us.userId === user.id && us.scopeId === 14);
-    if (index !== -1) user_scopes.splice(index, 1);
+    await db.promise().execute('DELETE FROM user_scope WHERE userId = ? AND scopeId = ?', [user.id, 14]).catch(err => {
+      console.error('Error deleting user scope:', err);
+    });
+
+    await db.promise().execute('UPDATE otp_code SET verified = 1 WHERE id = ?', [otp.id]).catch(err => {
+      console.error('Error updating OTP:', err);
+      throw new Error('Database error while updating OTP.');
+    })
 
     return otp;
-}
+  }
 
   static async getSession(sid) {
-    const session = sessions.find(s => s.sid === sid);
-    if (!session) throw new Error('[oAuth] Session not found');
-    const user = users.find(u => u.id === session.userId);
-    if (!user) throw new Error('[oAuth] User not found');
+    const [rows1] = await db.promise().query('SELECT * FROM session WHERE sid = ?', [sid]);
+    if (rows1.length === 0) throw new Error('[oAuth] Session not found');
+    const [rows2] = await db.promise().query('SELECT * FROM users WHERE id = ?', [rows1[0].userId]);
+    if (rows2.length === 0) throw new Error('[oAuth] User not found');
+    const user = rows2[0];
 
     return {
       user: {
@@ -132,10 +176,6 @@ static async login(email, password) {
         first_name: user.first_name,
         last_name: user.last_name
       },
-      scopes: user_scopes
-        .filter(us => us.userId === user.id)
-        .map(us => scopes.find(s => s.id === us.scopeId)?.name)
-        .filter(Boolean)
     };
   }
 }
