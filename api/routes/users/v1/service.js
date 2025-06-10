@@ -1,48 +1,73 @@
-const db = require("../../../configs/database-simulator");
-//sõnastik objekt
-const idToUuidMap = {
-  1: "UUID1",
-  2: "UUID2",
-  3: "UUID3",
-}; //aitab tõlkida andmeid ID -> UUID kujul
+const db = require('../../../middlewares/database');
 
 class UsersService {
-  getAll() { 
-    return db.users;
-  }//taagastab kõik kasutajad
-
-  getById(id) {
-    return db.users.find((u) => u.id === id);
-  } //leiab ühe kasutaja ID järgi
-
-  update(id, data) {
-    const user = db.users.find((u) => u.id === id);
-    if (!user) return null;
-    Object.assign(user, data);
-    return user; //uuendab kasutaja andmeid
+  // Get all users
+  async getAll() {
+    const [users] = await db.query('SELECT * FROM users');
+    return users;
   }
 
-  setActive(id, active) {
-    const user = db.users.find((u) => u.id === id);
-    if (!user) return null;
-    user.is_active = active;
-    return user; //aktiveerib või deaktiveerib kasutaja
+  // Get user by ID
+  async getById(id) {
+    const [user] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+    return user[0];
   }
 
-  assignScopes(userId, scopeIds) {
-    // Удаляем старые записи по userId
-    db.user_scopes = db.user_scopes.filter((us) => us.userId !== userId);
-    // Добавляем новые
-    for (const sid of scopeIds) {
-      db.user_scopes.push({ userId, scopeId: sid });
-    }
-    return db.user_scopes.filter((us) => us.userId === userId);
-  } //Kustutab vanad õigused ja lisab uued
-
-  getIdeasByUser(userId) {
+  // Update user
+  async update(id, data) {
+    const fields = [];
+    const values = [];
     
-    return db.suggestions.filter((s) => idToUuidMap[s.user_id] === userId);
-  } //Tagastab kasutaja ideed (UUID de kaudu).
+    for (const [key, value] of Object.entries(data)) {
+      fields.push(`${key} = ?`);
+      values.push(value);
+    }
+    
+    values.push(id);
+    await db.query(
+      `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    );
+    
+    return this.getById(id);
+  }
+
+  // Set active status
+  async setActive(id, active) {
+    await db.query(
+      'UPDATE users SET is_active = ? WHERE id = ?',
+      [active, id]
+    );
+    return this.getById(id);
+  }
+
+  // Assign scopes to user
+  async assignScopes(userId, scopeIds) {
+    await db.query('DELETE FROM user_scope WHERE userId = ?', [userId]);
+    
+    for (const scopeId of scopeIds) {
+      await db.query(
+        'INSERT INTO user_scope (userId, scopeld) VALUES (?, ?)',
+        [userId, scopeId]
+      );
+    }
+    
+    const [scopes] = await db.query(
+      'SELECT * FROM user_scope WHERE userId = ?',
+      [userId]
+    );
+    
+    return scopes;
+  }
+
+  // Get user's suggestions
+  async getIdeasByUser(userId) {
+    const [suggestions] = await db.query(
+      'SELECT * FROM suggestions WHERE user_id = ?',
+      [userId]
+    );
+    return suggestions;
+  }
 }
 
 module.exports = UsersService;
