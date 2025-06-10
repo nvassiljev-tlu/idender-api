@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const db = require('../../../middlewares/database');
 const { getUserId } = require('../../../middlewares/getUserId');
+const { DateTime } = require('luxon');
 
 class IdeasService {
   static async listIdeas() {
@@ -24,7 +25,8 @@ class IdeasService {
       throw new Error('User not authenticated');
     }
     const id = crypto.randomUUID();
-    const createdAt = new Date();
+    const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+    const createdAt = Math.floor(nowTallinn.toMillis());
     
     await db.promise().query(
       `INSERT INTO suggestions 
