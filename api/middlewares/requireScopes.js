@@ -41,23 +41,3 @@ function requireScopes(requiredScopeNames = [], user_id) {
 }
 
 module.exports = { requireScopes };
-
-
-
-//Mida teeb: Middleware õiguste (scopes) kontrollimiseks enne päringu täitmist.
-//Loogika:
-
-//Kontrollib, kas kasutajal on nõutavad õigused (requiredScopeNames), nt auth:access, voting:vote.
-
-//Kui õigused puuduvad, tagastab vea 403 ("User does not have the required scopes").
-
-//Kui kasutajat ei leitud või pole aktiivne, tagastab 404.
-
-//Seosed:
-
-//Kasutab andmeid database-simulator.js failist (users, scopes, user_scopes) kontrollimiseks.
-
-//Rakendatakse router.js failis marsruutide kaitsmiseks.
-
-module.exports = { requireScopes };
-
