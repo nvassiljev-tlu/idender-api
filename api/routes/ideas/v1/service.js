@@ -1,99 +1,121 @@
 const crypto = require('crypto');
-const { suggestions, suggestion_comments } = require('../../../configs/database-simulator')
+const db = require('../../../middlewares/database');
 
 class IdeasService {
-  static listIdeas() {
+  static async listIdeas() {
+    const [suggestions] = await db.promise().query('SELECT * FROM suggestions');
     return suggestions;
   }
 
-  static createIdea({ title, description, user_id }) {
-    if (!title || !description || !user_id) throw new Error('Missing required fields.');
+  static async createIdea({ title, description, user_id }) {
+     const id = crypto.randomUUID();
+    const createdAt = new Date();
+    
+    await db.promise().query(
+      `INSERT INTO suggestions 
+        (title, description, user_id, createdAt, is_anonymus, status) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [title, description, user_id, createdAt, 0, 0]
+    );
 
     const idea = {
-      id: crypto.randomUUID(),
+      id,
       title,
       description,
       user_id,
-      createdAt: new Date(),
+      createdAt,
       is_anonymus: 0,
       status: 0
     };
+    await db.promise().query('INSERT INTO suggestions (id, title, description, user_id, createdAt, is_anonymus, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [idea.id, idea.title, idea.description, idea.user_id, idea.createdAt, idea.is_anonymus, idea.status]
+    );
 
-    suggestions.push(idea);
     return idea;
   }
 
-  static getIdeaById(id) {
-    const idea = suggestions.find(i => i.id === id);
-    if (!idea) throw new Error('Idea not found.');
-    return idea;
+  static async getIdeaById(id) {
+  const [ideas] = await db.promise().query(
+      'SELECT * FROM suggestions WHERE id = ?', 
+      [id]
+    );
+    
+    if (ideas.length === 0) throw new Error('Idea not found');
+    return ideas[0];
   }
 
-  static updateIdea(id, data) {
-    const idea = suggestions.find(i => i.id === id);
-    if (!idea) throw new Error('Idea not found.');
-
-    Object.assign(idea, data, { updatedAt: new Date() });
-    return idea;
+  static async updateIdea(id, data) {
+  const { title, description } = data;
+    await db.promise().query(
+      `UPDATE suggestions 
+       SET title = ?, description = ?, updatedAt = ? 
+       WHERE id = ?`,
+      [title, description, new Date(), id]
+    );
+    
+    return this.getIdeaById(id);
   }
 
-  static deleteIdea(id) {
-    const index = suggestions.findIndex(i => i.id === id);
-    if (index === -1) throw new Error('Idea not found.');
+  static async deleteIdea(id) {
+    const [result] = await db.promise().execute(
+      'DELETE FROM suggestions WHERE id = ?', 
+      [id]
+    );
+    
+    if (result.affectedRows === 0) throw new Error('Idea not found');
 
-    suggestions.splice(index, 1);
     return { success: true };
   }
 
-  static performAction(id, action) {
-    const idea = suggestions.find(i => i.id === id);
-    if (!idea) throw new Error('Idea not found.');
+  /*
+  static async performAction(id, action) {
+    if (!action) throw new Error('Action is required');
+    
+    const idea = await this.getIdeaById(id);
+    if (!idea) throw new Error('Idea not found');
 
-    // Example logic
-    return { id, action, performedAt: new Date() };
-  }
-
-  static getComments(id) {
-    return suggestion_comments.filter(c => c.suggestion_id === id);
-  }
-
-  static addComment(id, { authorId, content }) {
-    if (!content || !authorId) throw new Error('Missing required fields.');
-
-    const comment = {
-      id: crypto.randomUUID(),
-      ideaId: id,
-      authorId,
-      content,
-      createdAt: new Date()
+    return { 
+      id, 
+      action, 
+      createdAt: new Date(),
+      status: 0 // Example status, adjust as needed
     };
+  }
+  */
 
-    suggestion_comments.push(comment);
+  static async getComments(ideaId) {
+    const [comments] = await db.promise().query(
+      'SELECT * FROM suggestion_comments WHERE ideaId = ?',
+      [ideaId]
+    );
+    
+    return comments;
+  }
+
+  static async addComment(ideaId, { user_id, content }) {
+    if (!content || !user_id) throw new Error('Missing required fields');
+    
+    const created_at = new Date();
+
+    await db.promise().query(
+      `INSERT INTO suggestion_comments 
+       (suggestion_id, user_id, comment, created_at) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [ideaId, user_id, content, created_at]
+    );
+
     return comment;
   }
 
-  static deleteComment(ideaId, commentId) {
-    const index = suggestion_comments.findIndex(c => c.ideaId === ideaId && c.id === commentId);
-    if (index === -1) throw new Error('Comment not found.');
-
-    suggestion_comments.splice(index, 1);
+  static async deleteComment(ideaId, id) {
+    const [result] = await db.promise().execute(
+      `DELETE FROM suggestion_comments 
+       WHERE id = ? AND suggestion_id = ?`,
+      [id, ideaId]
+    );
+    
+    if (result.affectedRows === 0) throw new Error('Comment not found');
     return { success: true };
-  }
-
-  static getWordFrequency() {
-    const allTexts = suggestions.map(s => `${s.title} ${s.description}`.toLowerCase());
-    const wordCounts = {};
-  
-    allTexts.forEach(text => {
-    const words = text.match(/\b\w+\b/g);
-      if (words) {
-        words.forEach(word => {
-          wordCounts[word] = (wordCounts[word] || 0) + 1;
-        });
-      }
-    });
-  
-    return wordCounts;
   }
   
 }
