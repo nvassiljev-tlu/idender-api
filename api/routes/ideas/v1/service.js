@@ -24,7 +24,6 @@ class IdeasService {
     if (!user_id) {
       throw new Error('User not authenticated');
     }
-    const id = crypto.randomUUID();
     const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
     const createdAt = Math.floor(nowTallinn.toMillis());
     
@@ -36,7 +35,6 @@ class IdeasService {
     );
 
     const idea = {
-      id,
       title,
       description,
       user_id,
@@ -44,8 +42,8 @@ class IdeasService {
       is_anonymus: 0,
       status: 0
     };
-    await db.promise().query('INSERT INTO suggestions (id, title, description, user_id, createdAt, is_anonymus, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [idea.id, idea.title, idea.description, idea.user_id, idea.createdAt, idea.is_anonymus, idea.status]
+    await db.promise().query('INSERT INTO suggestions (title, description, user_id, createdAt, is_anonymus, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [idea.title, idea.description, idea.user_id, idea.createdAt, idea.is_anonymus, idea.status]
     );
 
     return idea;
