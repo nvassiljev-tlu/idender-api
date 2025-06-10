@@ -13,7 +13,7 @@ class IdeasController {
 
   static async create(req, res) {
     try {
-      const idea = await IdeasService.createIdea(req.body);
+      const idea = await IdeasService.createIdea(req.body, req);
       res.status(201).json(createResponse(201, idea));
     } catch (err) {
       res.status(400).json(createResponse(400, {}, { error: err.message }));
