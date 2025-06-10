@@ -31,7 +31,7 @@ class OAuthService {
 
   const newScopes = {
     userId: user.id,
-    scopeId: 14
+    scopeId: 2
   };
 
   const code = crypto.randomInt(100000, 999999).toString();
@@ -102,12 +102,13 @@ static async login(email, password) {
 }
 
 
-  static logout(sid) {
+  static async logout(sid) {
     if (!sid) throw new Error('[oAuth] Session ID is required for logout.');
 
-    return db.promise().execute('DELETE FROM session WHERE sid = ?', [sid])
+    return await db.promise().execute('DELETE FROM session WHERE sid = ?', [sid])
       .then(() => {
         console.log('[oAuth] User logged out successfully.');
+        return true;
       })
       .catch(err => {
         console.error('Error during logout:', err);
@@ -115,6 +116,51 @@ static async login(email, password) {
       });
   }
 
+  static async getNewOtp(email) {
+    try {
+      const [rows1] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+      if (rows1.length === 0) throw new Error('[oAuth] User not found.');
+      const user = rows1[0];
+      const [rows2] = await db.promise().query('SELECT * FROM user_scope WHERE userId = ? AND scopeId = ?', [user.id, 2])
+      if (rows2.length === 0) throw new Error('[oAuth] User does not have the required scope.');
+      const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+      const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
+      const [rows3] = await db.promise().query('SELECT * FROM otp_code WHERE email = ? AND verified = 0', [email]);
+      if (rows3.length > 0) {
+        const otp = rows3[0];
+        if (otp.expiresAt > unixTimestampMilliseconds) {
+          return otp.code
+        }
+        await db.promise().execute('DELETE FROM otp_code WHERE id = ?', [otp.id]);
+        const code = crypto.randomInt(100000, 999999).toString();
+        const newOtp = {
+          email,
+          code,
+          expiresAt: Math.floor(nowTallinn.plus({ minutes: 10 }).toMillis()),
+          createdAt: unixTimestampMilliseconds,
+          id: crypto.randomUUID(),
+          verified: 0
+        };
+        await db.promise().execute('INSERT INTO otp_code (id, email, code, expiresAt, createdAt, verified) VALUES (?, ?, ?, ?, ?, ?)', [newOtp.id, newOtp.email, newOtp.code, newOtp.expiresAt, newOtp.createdAt, newOtp.verified]);
+        return code;
+      } else {
+        const code = crypto.randomInt(100000, 999999).toString();
+        const otp = {
+          email,
+          code,
+          expiresAt: Math.floor(nowTallinn.plus({ minutes: 10 }).toMillis()),
+          createdAt: unixTimestampMilliseconds,
+          id: crypto.randomUUID(),
+          verified: 0
+        };
+        await db.promise().execute('INSERT INTO otp_code (id, email, code, expiresAt, createdAt, verified) VALUES (?, ?, ?, ?, ?, ?)', [otp.id, otp.email, otp.code, otp.expiresAt, otp.createdAt, otp.verified]);
+        return code;
+      }
+    } catch (err) {
+      console.error('Error generating new OTP:', err);
+      throw new Error(`[oAuth] Error generating new OTP: ${err.message}`);
+    }
+  }
   
    static async verifyOtp(email, code) {
     const [rows1] = await db.promise().query('SELECT * FROM otp_code WHERE email = ? AND code = ? AND verified = 0', [email, code]);
@@ -129,7 +175,6 @@ static async login(email, password) {
     }
 
     const [rows2] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
-    console.log('rows2', rows2);
     if (rows2.length === 0) throw new Error('[oAuth] User not found.');
     const user = rows2[0];
 

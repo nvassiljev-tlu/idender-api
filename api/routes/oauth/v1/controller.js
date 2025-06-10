@@ -1,5 +1,6 @@
 const OAuthService = require('./service');
 const createResponse = require('../../../middlewares/createResponse');
+const { requireScopes } = require('../../../middlewares/requireScopes')
 
 class OAuthController {
   static async signup(req, res) {
@@ -26,9 +27,9 @@ class OAuthController {
     }
   }
 
-  static logout(req, res) {
+  static async logout(req, res) {
     try {
-      OAuthService.logout(req.cookies.sid);
+      await OAuthService.logout(req.cookies.sid);
       res.clearCookie('sid');
       res.status(200).json(createResponse(200, { message: '[oAuth] User logged out successfully.' }));
     } catch (err) {
@@ -40,6 +41,18 @@ class OAuthController {
     try {
       await OAuthService.verifyOtp(req.body.email, req.body.code);
       res.status(200).json(createResponse(200, { message: '[oAuth] OTP verified.' }));
+    } catch (err) {
+      res.status(400).json(createResponse(400, null, err.message));
+    }
+  }
+
+  static async getNewOtp(req, res) {
+    try {
+      if (!req.query.email) {
+        return res.status(400).json(createResponse(400, null, '[oAuth] Email is required to generate a new OTP.'));
+      }
+      const otp = await OAuthService.getNewOtp(req.query.email);
+      res.status(200).json(createResponse(200, { message: '[oAuth] New OTP generated.', data: { otp } }));
     } catch (err) {
       res.status(400).json(createResponse(400, null, err.message));
     }
