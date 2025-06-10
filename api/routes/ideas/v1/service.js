@@ -83,16 +83,16 @@ class IdeasService {
   }
   */
 
-  static async getComments(ideaId) {
+  static async getComments(suggestion_id) {
     const [comments] = await db.promise().query(
-      'SELECT * FROM suggestion_comments WHERE ideaId = ?',
-      [ideaId]
+      'SELECT * FROM suggestion_comments WHERE suggestion_id = ?',
+      [suggestion_id]
     );
     
     return comments;
   }
 
-  static async addComment(ideaId, { user_id, content }) {
+  static async addComment(suggestion_id, { user_id, content }) {
     if (!content || !user_id) throw new Error('Missing required fields');
     
     const created_at = new Date();
@@ -100,18 +100,18 @@ class IdeasService {
     await db.promise().query(
       `INSERT INTO suggestion_comments 
        (suggestion_id, user_id, comment, created_at) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [ideaId, user_id, content, created_at]
+       VALUES (?, ?, ?, ?)`,
+      [suggestion_id, user_id, content, created_at]
     );
 
     return comment;
   }
 
-  static async deleteComment(ideaId, id) {
+  static async deleteComment(suggestion_id, id) {
     const [result] = await db.promise().execute(
       `DELETE FROM suggestion_comments 
        WHERE id = ? AND suggestion_id = ?`,
-      [id, ideaId]
+      [id, suggestion_id]
     );
     
     if (result.affectedRows === 0) throw new Error('Comment not found');
