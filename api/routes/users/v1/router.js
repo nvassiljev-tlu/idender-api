@@ -9,23 +9,23 @@ const service = new UsersService();
 const controller = new UsersController(service);
 
 //tagastab kõik kasutajad,kontrollib, kas kasutajal UUID1 on auth:access õigus,mis kõigil peaks olema
-router.get('/', requireScopes(['auth:access'], "UUID1"), controller.list); 
+router.get('/', requireScopes(['auth:access']), controller.list); 
 
 //  tagastab ühe kasutaja info.
-router.get('/:id', requireScopes(['auth:access'], "UUID1"), controller.get);
+router.get('/:id', requireScopes(['auth:access']), controller.get);
 
 // uuendab kasutaja andmeid.
-router.patch('/:id', requireScopes(['auth:access'], "UUID1"), controller.update);
+router.patch('/:id', requireScopes(['auth:access']), controller.update);
 
 // Aktiveerib või deaktiveerib kasutaja. Vajalikud õigused: auth:access ja users:moderate
-router.post('/:id/activate', requireScopes(['auth:access', 'users:moderate'], "UUID1"), controller.activate);
+router.post('/:id/activate', requireScopes(['auth:access', 'users:moderate']), controller.activate);
 
-router.post('/:id/deactivate', requireScopes(['auth:access', 'users:moderate'], "UUID1"), controller.deactivate);
+router.post('/:id/deactivate', requireScopes(['auth:access', 'users:moderate']), controller.deactivate);
 
 // Määrab kasutajale õigused 
-router.post('/:id/scopes', requireScopes(['auth:access', 'users:scopes'], "UUID1"), controller.assignScopes);
+router.post('/:id/scopes', requireScopes(['auth:access', 'users:scopes']), controller.assignScopes);
 
 // Tagastab kasutaja ideed
-router.get('/:id/ideas', requireScopes(['auth:access', 'ideas:read'], "UUID1"), controller.getIdeas);
+router.get('/:id/ideas', requireScopes(['auth:access', 'ideas:read']), controller.getIdeas);
 
 module.exports = router;
