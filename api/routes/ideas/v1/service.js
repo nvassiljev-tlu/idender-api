@@ -27,13 +27,6 @@ class IdeasService {
     const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
     const createdAt = Math.floor(nowTallinn.toMillis());
     
-    await db.promise().query(
-      `INSERT INTO suggestions 
-        (title, description, user_id, createdAt, is_anonymus, status) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [title, description, user_id, createdAt, 0, 0]
-    );
-
     const idea = {
       title,
       description,
