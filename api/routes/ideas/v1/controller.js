@@ -2,18 +2,18 @@ const IdeasService = require('./service');
 const createResponse = require('../../../middlewares/createResponse')
 
 class IdeasController {
-  static list(req, res) {
+  static async list(req, res) {
     try {
-      const ideas = IdeasService.listIdeas();
+      const ideas = await IdeasService.listIdeas();
       res.status(200).json(createResponse(200, ideas));
     } catch (err) {
       res.status(400).json(createResponse(400, {}, { error: err.message }));
     }
   }
 
-  static create(req, res) {
+  static async create(req, res) {
     try {
-      const idea = IdeasService.createIdea(req.body);
+      const idea = await IdeasService.createIdea(req.body);
       res.status(201).json(createResponse(201, idea));
     } catch (err) {
       res.status(400).json(createResponse(400, {}, { error: err.message }));

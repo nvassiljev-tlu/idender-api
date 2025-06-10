@@ -8,6 +8,15 @@ class IdeasService {
   }
 
   static async createIdea({ title, description, user_id }) {
+    if (!title || !description || !user_id) {
+      throw new Error('Missing required fields: title, description, or user_id');
+    }
+    if (title.length < 3 || title.length > 30) {
+      throw new Error('Title must be between 3 and 30 characters');
+    }
+    if (description.length < 10 || description.length > 1000) {
+      throw new Error('Description must be between 10 and 1000 characters');
+    }
      const id = crypto.randomUUID();
     const createdAt = new Date();
     
