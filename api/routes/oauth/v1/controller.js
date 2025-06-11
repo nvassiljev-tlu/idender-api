@@ -21,7 +21,7 @@ class OAuthController {
         sameSite: 'None'
       });
 
-      res.status(200).json(createResponse(200, { message: '[oAuth] User logged in successfully.' }));
+      res.status(200).json(createResponse(200, { message: '[oAuth] User logged in successfully.', data: { session } }));
     } catch (err) {
       res.status(401).json(createResponse(401, null, err.message));
     }

@@ -98,7 +98,7 @@ static async login(email, password) {
     console.error('Error inserting session:', err);
     throw new Error('Database error while inserting session.');
   });
-  return session;
+  return session.sid;
 }
 
 
