@@ -1,64 +1,56 @@
-const db = require('../../../middlewares/database');
+const { users, suggestions, scopes, suggestion_reactions } = require('../../../configs/database-simulator.js');
 const crypto = require('crypto');
 
 class VotingService {
-  // Get global voting information for all ideas
-  static async getGlobalInfo() {
-    const [results] = await db.promise().query(`
-      SELECT 
-        s.id AS suggestion_id,
-        SUM(CASE WHEN v.reaction = 1 THEN 1 ELSE 0 END) AS likes,
-        SUM(CASE WHEN v.reaction = 0 THEN 1 ELSE 0 END) AS dislikes
-      FROM suggestions s
-      LEFT JOIN vote v ON s.id = v.suggestion_id
-      GROUP BY s.id
-    `);
-    return results;
-  }
-  static async getVotesForIdea(suggestion_id) {
-    const [votes] = await db.promise().query(
-      'SELECT * FROM vote WHERE suggestion_id = ?',
-      [suggestion_id]
-    );
-    return votes;
+  static getGlobalInfo() {
+    const ideasWithReactions = {};
+
+    for (const reaction of suggestion_reactions) {
+      const ideaId = reaction.suggestion_id;
+      if (!ideasWithReactions[ideaId]) {
+        ideasWithReactions[ideaId] = { likes: 0, dislikes: 0 };
+      }
+      if (reaction.reaction === 1) {
+        ideasWithReactions[ideaId].likes += 1;
+      } else if (reaction.reaction === 0) {
+        ideasWithReactions[ideaId].dislikes += 1;
+      }
+    }
+
+    return Object.entries(ideasWithReactions).map(([ideaId, counts]) => ({
+      ideaId,
+      likes: counts.likes,
+      dislikes: counts.dislikes,
+    }));
   }
 
-  static async getNextIdea(userId) {
-    const [availableIdeas] = await db.promise().query(`
-      SELECT s.* 
-      FROM suggestions s
-      WHERE s.status = 1
-        AND s.id NOT IN (
-          SELECT v.suggestion_id 
-          FROM vote v 
-          WHERE v.userId = ?
-        )
-      ORDER BY RAND()
-      LIMIT 1
-    `, [userId]);
-    
-    return availableIdeas[0] || null;
+  static getVotesForIdea(ideaId) {
+    return suggestion_reactions.filter(v => v.suggestion_id === parseInt(ideaId, 10));
   }
 
-  static async vote(suggestion_id, userId, reaction) {
+
+  static vote(ideaId, userId, reaction) {
     if (![0, 1].includes(reaction)) {
       throw new Error("Invalid reaction value. Must be 0 (dislike) or 1 (like).");
     }
 
-    const [idea] = await db.promise().query(
-      'SELECT id FROM suggestions WHERE id = ?',
-      [suggestion_id]
-    );
-    if (!idea.length) {
+    const ideaIdNum = parseInt(ideaId, 10);
+    const ideaExists = suggestions.some(s => s.id === ideaIdNum);
+    if (!ideaExists) {
       throw new Error("Idea does not exist");
     }
 
-    await db.promise().query(
-      `INSERT INTO vote (id, suggestion_id, userId, reaction, createdAt) 
-       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-      [crypto.randomUUID(), suggestion_id, userId, reaction]
-    );
+    const newReaction = {
+      id: crypto.randomUUID(),
+      reaction,
+      suggestion_id: ideaIdNum,
+      user_id: userId,
+      created_at: new Date(),
+    };
+    console.log('New reaction added:', newReaction, 'created_at:', newReaction.created_at.toISOString());
+    suggestion_reactions.push(newReaction);
   }
 }
+
 
 module.exports = VotingService;

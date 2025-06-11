@@ -9,9 +9,9 @@ class IdeasService {
     return suggestions;
   }
 
-  static async createIdea({ title, description }, req) {
-    if (!title || !description) {
-      throw new Error('Missing required fields: title, description');
+  static async createIdea({ title = String, description = String, categories = [], is_anonymus = 0 | 1 }, req) {
+    if (!title || !description || categories.length === 0 || typeof is_anonymus !== 'number' || (is_anonymus !== 0 && is_anonymus !== 1)) {
+      throw new Error('Missing required fields: title, description, categories, is_anonymus');
     }
     if (title.length < 3 || title.length > 30) {
       throw new Error('Title must be between 3 and 30 characters');
@@ -24,6 +24,16 @@ class IdeasService {
     if (!user_id) {
       throw new Error('User not authenticated');
     }
+
+    for (const category of categories) {
+      if (typeof category !== 'number') {
+        throw new Error('Invalid category ID');
+      }
+      const [categoryExists] = await db.promise().query('SELECT id FROM categories WHERE id = ?', [category]);
+      if (categoryExists.length === 0) {
+        throw new Error(`Category with ID ${category} does not exist`);
+      }
+    }
     const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
     const createdAt = Math.floor(nowTallinn.toMillis());
     
@@ -32,12 +42,19 @@ class IdeasService {
       description,
       user_id,
       createdAt,
-      is_anonymus: 0,
+      is_anonymus: is_anonymus,
       status: 0
     };
     await db.promise().query('INSERT INTO suggestions (title, description, user_id, createdAt, is_anonymus, status) VALUES (?, ?, ?, ?, ?, ?)',
       [idea.title, idea.description, idea.user_id, idea.createdAt, idea.is_anonymus, idea.status]
     );
+
+    for (const category of categories) {
+      await db.promise().query(
+        'INSERT INTO suggestions_categories (suggestion_id, category_id) VALUES (?, ?)',
+        [idea.id, category]
+      );
+    }
 
     return idea;
   }
@@ -124,6 +141,11 @@ class IdeasService {
     
     if (result.affectedRows === 0) throw new Error('Comment not found');
     return { success: true };
+  }
+
+  static async getCategories() {
+    const [categories] = await db.promise().query('SELECT * FROM categories');
+    return categories;
   }
   
 }

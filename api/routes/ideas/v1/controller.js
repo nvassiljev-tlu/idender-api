@@ -91,6 +91,15 @@ class IdeasController {
       res.status(500).json(createResponse(500, {}, { error: err.message }));
     }
   }
+
+  static async getCategories(req, res) {
+    try {
+      const categories = await IdeasService.getCategories();
+      res.status(200).json(createResponse(200, categories));
+    } catch (err) {
+      res.status(500).json(createResponse(500, {}, { error: err.message }));
+    }
+  }
   
 }
 
