@@ -16,6 +16,7 @@ const votingRouter = require('./api/routes/voting/v1/router');
 
 const allowedOrigins = [
   'http://172.19.2.236:3000',
+  'http://localhost:3000'
 ];
 
 app.use(bodyParser.urlencoded({extended: false}));
