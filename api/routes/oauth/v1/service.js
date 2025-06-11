@@ -180,12 +180,12 @@ static async login(email, password) {
 
     const newScopes = [
         { userId: user.id, scopeId: 1 },
-        { userId: user.id, scopeId: 5 },
         { userId: user.id, scopeId: 6 },
-        { userId: user.id, scopeId: 9 },
+        { userId: user.id, scopeId: 7 },
         { userId: user.id, scopeId: 10 },
-        { userId: user.id, scopeId: 12 },
-        { userId: user.id, scopeId: 13 }
+        { userId: user.id, scopeId: 11 },
+        { userId: user.id, scopeId: 13 },
+        { userId: user.id, scopeId: 14 }
     ];
 
     for (const scope of newScopes) {
