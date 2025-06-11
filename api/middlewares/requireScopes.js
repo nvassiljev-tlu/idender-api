@@ -5,14 +5,16 @@ const { DateTime } = require('luxon');
 function requireScopes(requiredScopeNames = []) {
   return async (req, res, next) => {
     try {
-      if (!req.cookies.sid) {
+      if (!req.cookies.sid && !req.headers.authorization) {
         return res.status(401).json(createResponse(401, {}, { error: "[Scopes] Unauthorized access" }));
+      }
+
+     if (req.headers.authorization) {
+        req.cookies.sid = req.headers.authorization.split(' ')[1];
       }
 
       const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
       const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
-
-      console.log(unixTimestampMilliseconds)
 
       const [rows1] = await db.promise().query('SELECT * FROM session WHERE sid = ? AND expires > ?', [req.cookies.sid, unixTimestampMilliseconds]);
       if (rows1.length === 0) {
@@ -47,6 +49,9 @@ function requireScopes(requiredScopeNames = []) {
       if (!hasAllScopes) {
         return res.status(403).json(createResponse(403, {}, { error: "[Scopes] User does not have the required scopes" }));
       }
+
+      req.userScopeIds = userScopeIds;
+      req.allScopes = scopes;
 
       next();
     } catch (err) {
