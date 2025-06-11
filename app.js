@@ -3,16 +3,11 @@ const app = express();
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-const cors = require('cors');
 
 const createResponse = require('./api/middlewares/createResponse');
 const isProd = process.env.NODE_ENV === 'production';
 
 app.use(cookieParser());
-
-app.use(cors({
-  origin: '*',              
-}));
 
 const oauthRouter = require('./api/routes/oauth/v1/router');
 const ideasRouter = require('./api/routes/ideas/v1/router');
@@ -24,6 +19,7 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     if (req.method === 'OPTIONS') {
         res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, PATCH');
