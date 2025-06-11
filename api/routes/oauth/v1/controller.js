@@ -18,7 +18,7 @@ class OAuthController {
       res.cookie('sid', session.sid, {
         httpOnly: true,
         secure: false,
-        sameSite: 'Lax'
+        sameSite: 'None'
       });
 
       res.status(200).json(createResponse(200, { message: '[oAuth] User logged in successfully.' }));
