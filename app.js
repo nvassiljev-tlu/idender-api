@@ -11,8 +11,7 @@ const isProd = process.env.NODE_ENV === 'production';
 app.use(cookieParser());
 
 app.use(cors({
-  origin: '*',
-  credentials: true                 
+  origin: '*',              
 }));
 
 const oauthRouter = require('./api/routes/oauth/v1/router');
