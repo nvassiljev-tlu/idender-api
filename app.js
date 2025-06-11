@@ -7,6 +7,13 @@ const cookieParser = require('cookie-parser');
 const createResponse = require('./api/middlewares/createResponse');
 const isProd = process.env.NODE_ENV === 'production';
 
+app.use(cookieParser());
+
+app.use(cors({
+  origin: '*',
+  credentials: true                 
+}));
+
 const oauthRouter = require('./api/routes/oauth/v1/router');
 const ideasRouter = require('./api/routes/ideas/v1/router');
 const usersRouter = require('./api/routes/users/v1/router');
@@ -14,7 +21,6 @@ const votingRouter = require('./api/routes/voting/v1/router');
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use(cookieParser());
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
