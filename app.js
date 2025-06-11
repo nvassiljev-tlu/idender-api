@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const createResponse = require('./api/middlewares/createResponse');
 const isProd = process.env.NODE_ENV === 'production';
