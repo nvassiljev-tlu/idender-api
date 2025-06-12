@@ -1,5 +1,6 @@
 const IdeasService = require('./service');
 const createResponse = require('../../../middlewares/createResponse')
+const { getUserId } = require('../../../middlewares/getUserId')
 
 class IdeasController {
   static async list(req, res) {
@@ -67,7 +68,15 @@ class IdeasController {
 
   static async addComment(req, res) {
     try {
-      const comment = await IdeasService.addComment(req.params.id, req.body);
+      const user_id = await getUserId(req);
+      if (!user_id) {
+        return res.status(401).json(createResponse(401, {}, { error: 'Unauthorized' }));
+      }
+      const { content } = req.body;
+      if (!content) {
+        return res.status(400).json(createResponse(400, {}, { error: 'Content is required' }));
+      }
+      const comment = await IdeasService.addComment(req.params.id, user_id, content);
       res.status(201).json(createResponse(201, comment));
     } catch (err) {
       res.status(400).json(createResponse(400, {}, { error: err.message }));

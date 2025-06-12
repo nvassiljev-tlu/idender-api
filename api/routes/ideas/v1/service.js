@@ -117,16 +117,24 @@ class IdeasService {
     return comments;
   }
 
-  static async addComment(suggestion_id, { user_id, content }) {
+  static async addComment(suggestion_id, user_id, content) {
     if (!content || !user_id) throw new Error('Missing required fields');
     
-    const created_at = new Date();
+    const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+    const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
 
     await db.promise().query(
       `INSERT INTO suggestion_comments 
        (suggestion_id, user_id, comment, created_at) 
        VALUES (?, ?, ?, ?)`,
-      [suggestion_id, user_id, content, created_at]
+      [suggestion_id, user_id, content, unixTimestampMilliseconds]
+    );
+
+    const [comment] = await db.promise().query(
+      `SELECT * FROM suggestion_comments 
+       WHERE suggestion_id = ? 
+       ORDER BY created_at DESC`,
+      [suggestion_id, user_id, content]
     );
 
     return comment;
