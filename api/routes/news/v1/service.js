@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const createResponse = require('../../../middlewares/createResponse')
 
 
-class NewsController {
+class NewsService {
   static async getNews(req, res) {
     const [news] = await db.promise().query('SELECT * FROM news');
     if (!news || news.length === 0) {
