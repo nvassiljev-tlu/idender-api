@@ -13,6 +13,7 @@ const oauthRouter = require('./api/routes/oauth/v1/router');
 const ideasRouter = require('./api/routes/ideas/v1/router');
 const usersRouter = require('./api/routes/users/v1/router');
 const votingRouter = require('./api/routes/voting/v1/router');
+const newsRouter = require('./api/routes/news/v1/router');
 
 const allowedOrigins = [
   'http://172.19.2.236:3000',
@@ -56,6 +57,7 @@ app.use('/v1/oauth', oauthRouter);
 app.use('/v1/ideas', ideasRouter);
 app.use('/v1/users', usersRouter);
 app.use('/v1/voting', votingRouter);
+app.use('/v1/news', newsRouter);
 
 app.use((req, res, next) => {
     const httpCode = 404;
