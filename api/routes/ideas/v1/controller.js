@@ -1,5 +1,6 @@
 const IdeasService = require('./service');
 const createResponse = require('../../../middlewares/createResponse')
+const checkScopes = require('../../../middlewares/checkScopes')
 const { getUserId } = require('../../../middlewares/getUserId')
 
 class IdeasController {
@@ -23,8 +24,16 @@ class IdeasController {
 
   static async getById(req, res) {
     try {
+      const userId = await getUserId(req);
+      const isAdmin = await checkScopes(userId, ['user:admin']);
       const idea = await IdeasService.getIdeaById(parseInt(req.params.id));
-      res.status(200).json(createResponse(200, idea));
+
+      res.status(200).json(
+        createResponse(200, {
+          idea,
+          ...(isAdmin ? { is_admin: true } : {})
+        })
+      );
     } catch (err) {
       res.status(404).json(createResponse(404, {}, { error: err.message }));
     }

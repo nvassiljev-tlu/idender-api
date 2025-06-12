@@ -110,7 +110,14 @@ class IdeasService {
 
   static async getComments(suggestion_id) {
     const [comments] = await db.promise().query(
-      'SELECT * FROM suggestion_comments WHERE suggestion_id = ?',
+      `SELECT 
+        sc.*, 
+        u.first_name, 
+        u.last_name 
+      FROM suggestion_comments sc
+      INNER JOIN users u ON sc.user_id = u.id
+      WHERE sc.suggestion_id = ?
+      ORDER BY sc.created_at DESC`,
       [suggestion_id]
     );
     
@@ -130,14 +137,19 @@ class IdeasService {
       [suggestion_id, user_id, content, unixTimestampMilliseconds]
     );
 
-    const [comment] = await db.promise().query(
-      `SELECT * FROM suggestion_comments 
-       WHERE suggestion_id = ? 
-       ORDER BY created_at DESC`,
-      [suggestion_id, user_id, content]
+    const [comments] = await db.promise().query(
+      `SELECT 
+        sc.*, 
+        u.first_name, 
+        u.last_name 
+      FROM suggestion_comments sc
+      INNER JOIN users u ON sc.user_id = u.id
+      WHERE sc.suggestion_id = ?
+      ORDER BY sc.created_at DESC`,
+      [suggestion_id]
     );
 
-    return comment;
+    return comments;
   }
 
   static async deleteComment(suggestion_id, id) {
