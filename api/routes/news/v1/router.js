@@ -8,4 +8,4 @@ router.get('/', requireScopes(['auth:access', 'ideas:read']), NewsController.get
 router.get('/:id', requireScopes(['auth:access', 'ideas:read']), NewsController.getNewsById);
 router.get('/recent', requireScopes(['auth:access', 'ideas:read']), NewsController.getRecentNews);
 
-module.exports = router; 
+module.exports = router;
