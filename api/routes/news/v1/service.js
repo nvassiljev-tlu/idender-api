@@ -1,6 +1,5 @@
-const crypto = require('crypto');
+const db = require('../../../middlewares/database');
 const createResponse = require('../../../middlewares/createResponse')
-
 
 class NewsService {
   static async getNews(req, res) {
@@ -11,15 +10,15 @@ class NewsService {
     res.status(200).json(createResponse(200, news));
   }
 
-  static async getNewsById(req, res) {
-    const [newsId] = await db.promise().query('SELECT * FROM news WHERE id = ?', [req.params.id]);
-    if (!newsId) {
-      return res.status(404).json(createResponse(404, null, "News item not found"));
+  static async getNewsById(id) {
+    const [newsId] = await db.promise().query('SELECT * FROM news WHERE id = ?', [id]);
+    if (newsId.length === 0) {
+      return null
     }
     res.status(200).json(createResponse(200, newsId));
   }
 
-  static async getRecentNews(limit = 5) {
+  static async getRecentNews(limit) {
     const [news] = await db.promise().query(
       'SELECT * FROM news ORDER BY created_at DESC LIMIT ?',
       [limit]

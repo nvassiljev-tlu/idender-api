@@ -13,7 +13,7 @@ class NewsController {
 
   static async getNewsById(req, res) {
     try {
-      const newsId = req.params.id;
+      const newsId = parseInt(req.params.id);
       const newsItem = await NewsService.getNewsById(newsId);
       if (!newsItem) {
         return res.status(404).json(createResponse(404, null, "News item not found"));
