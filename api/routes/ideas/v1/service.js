@@ -45,7 +45,7 @@ class IdeasService {
       is_anonymus: is_anonymus,
       status: 0
     };
-    await db.promise().query('INSERT INTO suggestions (title, description, user_id, createdAt, is_anonymus, status) VALUES (?, ?, ?, ?, ?, ?)',
+    const query = await db.promise().execute('INSERT INTO suggestions (title, description, user_id, createdAt, is_anonymus, status) VALUES (?, ?, ?, ?, ?, ?)',
       [idea.title, idea.description, idea.user_id, idea.createdAt, idea.is_anonymus, idea.status]
     );
 
@@ -56,7 +56,7 @@ class IdeasService {
       );
     }
 
-    return idea;
+    return { id: query[0].insertId };
   }
 
   static async getIdeaById(id) {
