@@ -26,7 +26,7 @@ class IdeasController {
     try {
       const userId = await getUserId(req);
       const isAdmin = await checkScopes(userId, ['user:admin']);
-      const idea = await IdeasService.getIdeaById(parseInt(req.params.id));
+      const idea = await IdeasService.getIdeaById(parseInt(req.params.id, isAdmin));
 
       res.status(200).json(
         createResponse(200, {
@@ -68,7 +68,9 @@ class IdeasController {
 
   static async getComments(req, res) {
     try {
-      const result = await IdeasService.getComments(parseInt(req.params.id));
+      const userId = await getUserId(req);
+      const isAdmin = await checkScopes(userId, ['user:admin']);
+      const result = await IdeasService.getComments(parseInt(req.params.id), isAdmin);
       res.status(200).json(createResponse(200, result));
     } catch (err) {
       res.status(404).json(createResponse(404, {}, { error: err.message }));
@@ -98,15 +100,6 @@ class IdeasController {
       res.status(200).json(createResponse(200, result));
     } catch (err) {
       res.status(404).json(createResponse(404, {}, { error: err.message }));
-    }
-  }
-
-  static async wordFrequency(req, res) {
-    try {
-      const freq = await IdeasService.getWordFrequency();
-      res.status(200).json(createResponse(200, freq));
-    } catch (err) {
-      res.status(500).json(createResponse(500, {}, { error: err.message }));
     }
   }
 

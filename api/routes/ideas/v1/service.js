@@ -59,14 +59,36 @@ class IdeasService {
     return { id: query[0].insertId };
   }
 
-  static async getIdeaById(id) {
-  const [ideas] = await db.promise().query(
+  static async getIdeaById(id, isAdmin) {
+    const [ideas] = await db.promise().query(
       'SELECT * FROM suggestions WHERE id = ?', 
       [id]
     );
-    
+
     if (ideas.length === 0) throw new Error('Idea not found');
-    return ideas[0];
+
+    const idea = ideas[0];
+
+    const [users] = await db.promise().query(
+      'SELECT first_name, last_name FROM users WHERE id = ?',
+      [idea.user_id]
+    );
+
+    const user = users[0];
+
+    const isAnonymous = idea.is_anonymus === 1;
+
+    if (isAdmin) {
+      idea.first_name = user?.first_name || null;
+      idea.last_name = user?.last_name || null;
+    } else if (isAnonymous) {
+      idea.user_id = 'Anonymous';
+    } else {
+      idea.first_name = user?.first_name || null;
+      idea.last_name = user?.last_name || null;
+    }
+
+    return idea;
   }
 
   static async updateIdea(id, data) {
@@ -108,19 +130,20 @@ class IdeasService {
   }
   */
 
-  static async getComments(suggestion_id) {
-    const [comments] = await db.promise().query(
-      `SELECT 
+  static async getComments(suggestion_id, isAdmin) {
+    const query = `
+      SELECT 
         sc.*, 
         u.first_name, 
         u.last_name 
       FROM suggestion_comments sc
       INNER JOIN users u ON sc.user_id = u.id
-      WHERE sc.suggestion_id = ? AND sc.deleted_at IS NULL
-      ORDER BY sc.created_at DESC`,
-      [suggestion_id]
-    );
-    
+      WHERE sc.suggestion_id = ?
+      ${!isAdmin ? 'AND sc.deleted_at IS NULL' : ''}
+      ORDER BY sc.created_at DESC
+    `;
+
+    const [comments] = await db.promise().query(query, [suggestion_id]);
     return comments;
   }
 
@@ -153,13 +176,16 @@ class IdeasService {
   }
 
   static async deleteComment(suggestion_id, id) {
+    const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+    const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
     const [result] = await db.promise().execute(
-      `DELETE FROM suggestion_comments 
-       WHERE id = ? AND suggestion_id = ?`,
-      [id, suggestion_id]
+      `UPDATE suggestion_comments 
+      SET deleted_at = ?
+      WHERE id = ? AND suggestion_id = ? AND deleted_at IS NULL`,
+      [unixTimestampMilliseconds, id, suggestion_id]
     );
-    
-    if (result.affectedRows === 0) throw new Error('Comment not found');
+
+    if (result.affectedRows === 0) throw new Error('Comment not found or already deleted');
     return { success: true };
   }
 
