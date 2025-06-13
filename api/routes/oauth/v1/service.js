@@ -26,8 +26,7 @@ class OAuthService {
     first_name,
     last_name,
     password: hashedPassword,
-    is_active: true,
-    lang: 'en',
+    is_active: true
   };
 
   const newScopes = {
@@ -45,7 +44,7 @@ class OAuthService {
     verified: 0
   };
 
-  await db.promise().execute('INSERT INTO users (email, first_name, last_name, password, is_active, id, lang) VALUES (?, ?, ?, ?, ?, ?, ?)', [email, first_name, last_name, hashedPassword, true, user_id, 'en']).catch(err => {
+  await db.promise().execute('INSERT INTO users (email, first_name, last_name, password, is_active, id) VALUES (?, ?, ?, ?, ?, ?)', [email, first_name, last_name, hashedPassword, true, user_id]).catch(err => {
     console.error('Error inserting user:', err);
     throw new Error('Database error while inserting user.');
   });
@@ -99,7 +98,7 @@ static async login(email, password) {
     console.error('Error inserting session:', err);
     throw new Error('Database error while inserting session.');
   });
-  return session.sid;
+  return { sid: session.sid, lang: user.lang };
 }
 
 
@@ -220,15 +219,9 @@ static async login(email, password) {
         id: user.id,
         email: user.email,
         first_name: user.first_name,
-        last_name: user.last_name,
-        lang: user.lang,
+        last_name: user.last_name
       },
     };
-  }
-    static async setUserLang(userId, lang) {
-    if (!['en', 'fr', 'et'].includes(lang)) throw new Error('Unsupported language');
-    await db.promise().execute('UPDATE users SET lang = ? WHERE id = ?', [lang, userId]);
-    return { lang };
   }
 }
 

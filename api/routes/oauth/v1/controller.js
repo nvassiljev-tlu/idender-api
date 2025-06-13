@@ -5,31 +5,8 @@ const { requireScopes } = require('../../../middlewares/requireScopes')
 class OAuthController {
   static async signup(req, res) {
     try {
-      const { lang = 'en', ...userData } = req.body;
       const {user, otp} = await OAuthService.signup(req.body);
-      if (['en', 'fr', 'et'].includes(lang)) {
-        await OAuthService.setUserLang(user.id, lang);
-        user.lang = lang;
-      
-    }
       res.status(201).json(createResponse(201, { message: '[oAuth] User registered successfully.', data: {user, otp}, }));
-    } catch (err) {
-      res.status(400).json(createResponse(400, null, err.message));
-    }
-  }
-
-  static async langPreset (req, res) {
-    try {
-      const lang = req.query.lang || 'en';
-      const userId = req.user.id;
-      if (!userId) {
-        return res.status(401).json(createResponse(401, null, '[oAuth] Unauthorized: User ID is required.'));
-      }
-      if (['en', 'fr', 'et'].includes(lang)) {
-        await OAuthService.setUserLang(userId, lang);
-        req.user.lang = lang;
-      }
-      res.status(200).json(createResponse(200, { message: '[oAuth] Language preset successfully.', data: { lang: req.user.lang } }));
     } catch (err) {
       res.status(400).json(createResponse(400, null, err.message));
     }
@@ -38,13 +15,13 @@ class OAuthController {
   static async login(req, res) {
     try {
       const session = await OAuthService.login(req.body.email, req.body.password);
-      res.cookie('sid', session.sid, {
+      res.cookie('sid', session, {
         httpOnly: true,
         secure: false,
         sameSite: 'None'
       });
 
-      res.status(200).json(createResponse(200, { message: '[oAuth] User logged in successfully.', data: { session } }));
+      res.status(200).json(createResponse(200, { message: '[oAuth] User logged in successfully.', data: { session: session.sid, language: session.lang } }));
     } catch (err) {
       res.status(401).json(createResponse(401, null, err.message));
     }
