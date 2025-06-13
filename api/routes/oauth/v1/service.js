@@ -223,6 +223,59 @@ static async login(email, password) {
       },
     };
   }
+
+  static async forgotPassword(email) {
+    try {
+      const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+      const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
+
+      const session = {
+        email,
+        code: crypto.randomUUID(),
+        created_at: unixTimestampMilliseconds,
+        expires_at: Math.floor(nowTallinn.plus({ minutes: 10 }).toMillis()),
+      }
+
+      await db.promise().execute('INSERT INTO forgot_password_session (email, code, expired_at, created_at) VALUES (?, ?, ?, ?)', [session.email, session.code, session.expires_at, session.created_at]).catch(err => {
+        console.error('Error inserting forgot password session:', err);
+        throw new Error('Database error while inserting forgot password session.');
+      });
+
+      return session;
+    } catch (err) {
+      console.error('Error during forgot password:', err);
+      throw new Error(`[oAuth] Error during forgot password: ${err.message}`);
+    }
+  }
+
+  static async resetPassword(email, code, new_password) {
+    try {
+      if (!email || !code || !new_password) {
+        throw new Error('[oAuth] Email, code, and new password are required to reset password.');
+      }
+
+      const [rows] = await db.promise().query('SELECT * FROM forgot_password_session WHERE email = ? AND code = ? AND expired_at > ? AND is_used = ?', [email, code, Math.floor(DateTime.now().setZone('Europe/Tallinn').toMillis()), 0]);
+
+      if (rows.length === 0) {
+        throw new Error('[oAuth] Invalid or expired reset password code.');
+      }
+
+      const hashedPassword = await bcrypt.hash(new_password, 10);
+      await db.promise().execute('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email]).catch(err => {
+        console.error('Error updating user password:', err);
+        throw new Error('Database error while updating user password.');
+      });
+
+      await db.promise().execute('UPDATE forgot_password_session SET is_used = ? WHERE email = ? AND code = ?', [1, email, code]).catch(err => {
+        console.error('Error deleting forgot password session:', err);
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Error during reset password:', err);
+      throw new Error(`[oAuth] Error during reset password: ${err.message}`);
+    }
+  }
 }
 
 module.exports = OAuthService;

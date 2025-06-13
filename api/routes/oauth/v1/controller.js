@@ -66,6 +66,37 @@ class OAuthController {
       res.status(401).json(createResponse(401, null, err.message));
     }
   }
+
+  static async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json(createResponse(400, null, '[oAuth] Email is required to reset password.'));
+      }
+      const response = await OAuthService.forgotPassword(email);
+      res.status(200).json(createResponse(200, { message: '[oAuth] Password reset link sent to your email.', code: response.code }));
+    } catch (err) {
+      res.status(400).json(createResponse(400, null, err.message));
+    }
+  }
+
+  static async resetPassword(req, res) {
+    try {
+      const { email, code, new_password } = req.body;
+      if (!email || !code || !new_password) {
+        return res.status(400).json(createResponse(400, null, '[oAuth] Email, code, and new password are required to reset password.'));
+      }
+      const success = await OAuthService.resetPassword(email, code, new_password);
+      if (success) {
+        res.status(200).json(createResponse(200, { message: '[oAuth] Password reset successfully.' }));
+      } else {
+        res.status(400).json(createResponse(400, null, '[oAuth] Invalid email or code.'));
+      }
+    } catch (err) {
+      res.status(400).json(createResponse(400, null, err.message));
+    }
+  }
+
 }
 
 module.exports = OAuthController;
