@@ -49,7 +49,7 @@ function requireScopes(requiredScopeNames = []) {
       if (!hasAllScopes) {
         return res.status(403).json(createResponse(403, {}, { error: "[Scopes] User does not have the required scopes" }));
       }
-
+      req.user = user;
       req.userScopeIds = userScopeIds;
       req.allScopes = scopes;
 
