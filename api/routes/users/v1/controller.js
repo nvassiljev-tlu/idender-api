@@ -33,7 +33,6 @@ class UsersController {
     res.status(200).json(createResponse(200, updated));
   };
 
-
   activate = async (req, res) => {
     const result = await this.service.setActive(req.params.id, true);
     res.status(200).json(createResponse(200, result));

@@ -70,30 +70,30 @@ const suggestion_reactions = [
 
 const users = [
   {
-    id: "UUID1",
-    email: "john.doe@tpl.edu.ee",
-    is_active: true,
-    created_at: "2025-01-01T08:00:00",
-    first_name: "John",
-    last_name: "Doe",
+    "id": "UUID1",
+    "email": "john.doe@tpl.edu.ee",
+    "is_active": true,
+    "created_at": "2025-01-01T08:00:00",
+    "first_name": "John",
+    "last_name": "Doe"
   },
   {
-    id: "UUID2",
-    email: "jane.smith@tpl.edu.ee",
-    is_active: true,
-    created_at: "2025-01-05T09:00:00",
-    first_name: "Jane",
-    last_name: "Smith",
+    "id": "UUID2",
+    "email": "jane.smith@tpl.edu.ee",
+    "is_active": true,
+    "created_at": "2025-01-05T09:00:00",
+    "first_name": "Jane",
+    "last_name": "Smith"
   },
   {
-    id: "UUID3",
-    email: "admin.user@tpl.edu.ee",
-    is_active: true,
-    created_at: "2025-01-10T10:00:00",
-    first_name: "Admin",
-    last_name: "User",
-  },
-];
+    "id": "UUID3",
+    "email": "admin.user@tpl.edu.ee",
+    "is_active": true,
+    "created_at": "2025-01-10T10:00:00",
+    "first_name": "Admin",
+    "last_name": "User"
+  }
+]
 
 const scopes = [
   { id: 1, name: "auth:access" },
@@ -109,27 +109,30 @@ const scopes = [
   { id: 10, name: "comments:create" },
   { id: 11, name: "comments:moderate" },
   { id: 12, name: "voting:read" },
-  { id: 13, name: "voting:vote" },
+  { id: 13, name: "voting:vote" }
 ];
+
 
 const user_scopes = [
-  { userId: "UUID1", scopeId: 1 },
-  { userId: "UUID1", scopeId: 13 },
-  { userId: "UUID1", scopeId: 12 },
-  { userId: "UUID2", scopeId: 1 },
-  { userId: "UUID3", scopeId: 1 },
-  { userId: "UUID3", scopeId: 2 },
-  { userId: "UUID3", scopeId: 6 },
-];
+  { "userId": "UUID1", "scopeId": 1 },
+  { "userId": "UUID1", "scopeId": 5 },
+  { "userId": "UUID1", "scopeId": 9 },
+  { "userId": "UUID1", "scopeId": 12 },
+  { "userId": "UUID1", "scopeId": 13 },
+  { "userId": "UUID1", "scopeId": 6 },
+  { "userId": "UUID2", "scopeId": 1 },
+  { "userId": "UUID3", "scopeId": 1 },
+  { "userId": "UUID3", "scopeId": 2 },
+  { "userId": "UUID3", "scopeId": 6 }
+]
 
 const votes = [
-  { id: "UUID4", ideaId: "1", userId: "UUID1" },
-  { id: "UUID5", ideaId: "2", userId: "UUID2" },
-];
+  { "id": "UUID4", "ideaId": "1", "userId": "UUID1" },
+  { "id": "UUID5", "ideaId": "2", "userId": "UUID2" }
+]
 
 const sessions = [
-{
-
+  {
     "id": "UUID6",
     "sid": "UUID7",
     "userId": "UUID1",
@@ -167,7 +170,6 @@ const otps = [
     verified: true
   },
 ]
-
 
 module.exports = {
   categories,
