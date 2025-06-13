@@ -23,9 +23,16 @@ class UsersController {
     if (userId !== req.params.id) {
       return res.status(403).json(createResponse(403, {}, { message: "You are not authorized to perform this action." }));
     }
-    const updated = await this.service.update(req.params.id, req.body);
+
+    const data = {
+      preferred_language: req.body.preferred_language,
+      profile_picture: req.file ? `/uploads/${req.file.filename}` : null
+    };
+
+    const updated = await this.service.update(req.params.id, data);
     res.status(200).json(createResponse(200, updated));
   };
+
 
   activate = async (req, res) => {
     const result = await this.service.setActive(req.params.id, true);

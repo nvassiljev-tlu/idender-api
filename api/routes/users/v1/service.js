@@ -8,6 +8,7 @@ class UsersService {
 
   async getById(id) {
     const [user] = await db.promise().query('SELECT * FROM users WHERE id = ?', [id]);
+    delete user[0].password
     return user[0];
   }
 
