@@ -12,10 +12,26 @@ class UsersService {
   }
 
   async update(id, data) {
-    const fields = [];
-    const values = [];
-    
-    
+    const { preferred_language, profile_picture } = data
+    if (!preferred_language && !profile_picture) {
+      throw new Error('At least one field must be provided for update');
+    } else {
+      const updates = [];
+      const values = [];
+
+      if (preferred_language) {
+        updates.push('lang = ?');
+        values.push(preferred_language);
+      }
+      if (profile_picture) {
+        updates.push('profile_picture = ?');
+        values.push(profile_picture);
+      }
+
+      values.push(id);
+      const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+      await db.promise().query(query, values);
+    }
     return this.getById(id);
   }
 

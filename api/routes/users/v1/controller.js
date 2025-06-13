@@ -19,6 +19,10 @@ class UsersController {
   };
 
   update = async (req, res) => {
+    const userId = await getUserId(req);
+    if (userId !== req.params.id) {
+      return res.status(403).json(createResponse(403, {}, { message: "You are not authorized to perform this action." }));
+    }
     const updated = await this.service.update(req.params.id, req.body);
     res.status(200).json(createResponse(200, updated));
   };
