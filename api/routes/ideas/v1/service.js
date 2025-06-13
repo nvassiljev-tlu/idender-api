@@ -199,6 +199,21 @@ class IdeasService {
     const [categories] = await db.promise().query('SELECT * FROM categories');
     return categories;
   }
+
+  static async setStatus(id, status) {
+    if (typeof status !== 'number' || ![0, 1, 2, 3, 4, 5].includes(status)) {
+      throw new Error('Invalid status value');
+    }
+
+    const [result] = await db.promise().execute(
+      'UPDATE suggestions SET status = ? WHERE id = ?',
+      [status, id]
+    );
+
+    if (result.affectedRows === 0) throw new Error('Idea not found');
+
+    return { success: true };
+  }
   
 }
 

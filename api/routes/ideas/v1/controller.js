@@ -111,6 +111,15 @@ class IdeasController {
       res.status(500).json(createResponse(500, {}, { error: err.message }));
     }
   }
+
+  static async setStatus(req, res) {
+    try {
+      const result = await IdeasService.setStatus(req.params.id, req.body.status);
+      res.status(200).json(createResponse(200, result));
+    } catch (err) {
+      res.status(400).json(createResponse(400, {}, { error: err.message }));
+    }
+  }
   
 }
 
