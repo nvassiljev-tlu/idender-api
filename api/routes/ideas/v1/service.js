@@ -114,6 +114,7 @@ class IdeasService {
         sc.*, 
         u.first_name, 
         u.last_name 
+      WHERE sc.deleted_at IS NULL
       FROM suggestion_comments sc
       INNER JOIN users u ON sc.user_id = u.id
       WHERE sc.suggestion_id = ?

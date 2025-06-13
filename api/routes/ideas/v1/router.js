@@ -12,6 +12,6 @@ router.patch('/:id', requireScopes(['auth:access', 'ideas:read', 'ideas:update']
 router.delete('/:id', requireScopes(['auth:access', 'ideas:moderate']), IdeasController.delete);
 router.get('/:id/comments', requireScopes(['auth:access', 'comments:read']), IdeasController.getComments);
 router.post('/:id/comments', requireScopes(['auth:access', 'comments:read', 'comments:create']), IdeasController.addComment);
-router.delete('/:id/comments', requireScopes(['auth:access', 'comments:moderate']), IdeasController.deleteComment);
+router.delete('/:id/comments/:comment_id', requireScopes(['auth:access', 'comments:moderate']), IdeasController.deleteComment);
 
 module.exports = router;

@@ -94,7 +94,7 @@ class IdeasController {
 
   static async deleteComment(req, res) {
     try {
-      const result = await IdeasService.deleteComment(req.params.id, req.body.commentId);
+      const result = await IdeasService.deleteComment(parseInt(req.params.id), parseInt(req.params.comment_id));
       res.status(200).json(createResponse(200, result));
     } catch (err) {
       res.status(404).json(createResponse(404, {}, { error: err.message }));
