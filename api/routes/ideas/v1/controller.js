@@ -26,7 +26,7 @@ class IdeasController {
     try {
       const userId = await getUserId(req);
       const isAdmin = await checkScopes(userId, ['user:admin']);
-      const idea = await IdeasService.getIdeaById(parseInt(req.params.id, isAdmin));
+      const idea = await IdeasService.getIdeaById(parseInt(req.params.id), isAdmin);
 
       res.status(200).json(
         createResponse(200, {

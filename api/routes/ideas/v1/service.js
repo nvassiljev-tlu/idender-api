@@ -67,7 +67,7 @@ class IdeasService {
 
     if (ideas.length === 0) throw new Error('Idea not found');
 
-    const idea = ideas[0];
+    let idea = ideas[0];
 
     const [users] = await db.promise().query(
       'SELECT first_name, last_name FROM users WHERE id = ?',
@@ -76,7 +76,13 @@ class IdeasService {
 
     const user = users[0];
 
-    const isAnonymous = idea.is_anonymus === 1;
+    if (!user) {
+      idea.first_name = null;
+      idea.last_name = null;
+      idea.user_id = 'Unknown';
+    }
+
+    const isAnonymous = parseInt(idea.is_anonymus) === 1;
 
     if (isAdmin) {
       idea.first_name = user?.first_name || null;
