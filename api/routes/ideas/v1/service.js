@@ -84,7 +84,7 @@ class IdeasService {
 
     const isAnonymous = parseInt(idea.is_anonymus) === 1;
 
-    if (isAdmin) {
+    if (isAdmin || (id === idea.user_id)) {
       idea.first_name = user?.first_name || null;
       idea.last_name = user?.last_name || null;
     } else if (isAnonymous) {
