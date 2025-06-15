@@ -10,7 +10,7 @@ const UsersController = require('./controller');
 const service = new UsersService();
 const controller = new UsersController(service);
 
-router.get('/', requireScopes(['auth:access']), controller.list); 
+router.get('/', requireScopes(['auth:access', 'user:admin']), controller.list); 
 router.get('/:id', requireScopes(['auth:access']), controller.get);
 router.patch('/:id', requireScopes(['auth:access']), upload.single("profile_picture"), controller.update);
 router.post('/:id/activate', requireScopes(['auth:access', 'users:moderate']), controller.activate);
