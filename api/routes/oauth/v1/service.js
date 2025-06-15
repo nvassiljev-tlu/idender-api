@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const { users, user_scopes, sessions, otps, scopes } = require('../../../configs/database-simulator');
 const db = require('../../../middlewares/database')
 const { DateTime } = require('luxon');
+const checkScopes = require('../../../middlewares/checkScopes');
 
 class OAuthService {
 
@@ -70,6 +71,11 @@ static async login(email, password) {
 
   if (user && user.is_active === 0) {
     throw new Error('[oAuth] User is not active');
+  }
+
+  const hasAccessScope = await checkScopes(user.id, ['auth:access']);
+  if (!hasAccessScope) {
+    throw new Error('[oAuth] User does not have the required scope to access this resource.');
   }
 
   const match = await bcrypt.compare(password, user.password);
@@ -177,6 +183,11 @@ static async login(email, password) {
     const [rows2] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
     if (rows2.length === 0) throw new Error('[oAuth] User not found.');
     const user = rows2[0];
+
+    const hasSignupScope = await checkScopes(user.id, ['auth:signup']);
+    if (!hasSignupScope) {
+      throw new Error('[oAuth] User does not have the required scope to verify OTP.');
+    }
 
     const newScopes = [
         { userId: user.id, scopeId: 1 },
