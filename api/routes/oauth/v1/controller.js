@@ -29,7 +29,7 @@ class OAuthController {
 
   static async logout(req, res) {
     try {
-      await OAuthService.logout(req.cookies.sid);
+      await OAuthService.logout(req.headers.authorization);
       res.clearCookie('sid');
       res.status(200).json(createResponse(200, { message: '[oAuth] User logged out successfully.' }));
     } catch (err) {
