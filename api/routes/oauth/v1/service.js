@@ -15,7 +15,7 @@ class OAuthService {
   const [rows] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
   if (rows.length > 0) throw new Error('Email already used.');
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 15);
   const user_id = crypto.randomUUID();
   const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
   const unixTimestampMilliseconds = Math.floor(nowTallinn.toMillis());
