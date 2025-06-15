@@ -64,13 +64,9 @@ class OAuthService {
 
 
 static async login(email, password) {
-  const [rows] = await db.promise().query('SELECT * FROM users WHERE email = ? AND is_active = ?', [email, 1]);
+  const [rows] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
   if (rows.length === 0) throw new Error('[oAuth] Invalid credentials');
   const user = rows[0];
-
-  if (user && user.is_active === 0) {
-    throw new Error('[oAuth] User is not active');
-  }
 
   const hasAccessScope = await checkScopes(user.id, ['auth:access']);
   if (!hasAccessScope) {
@@ -80,6 +76,10 @@ static async login(email, password) {
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) throw new Error('[oAuth] Invalid credentials');
+
+  if (user && user.is_active === 0) {
+    throw new Error('[oAuth] User is not active');
+  }
 
   const sid = crypto.randomUUID();
   const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
@@ -270,7 +270,7 @@ static async login(email, password) {
         throw new Error('[oAuth] Invalid or expired reset password code.');
       }
 
-      const hashedPassword = await bcrypt.hash(new_password, 10);
+      const hashedPassword = await bcrypt.hash(new_password, 15);
       await db.promise().execute('UPDATE users SET password = ? WHERE email = ?', [hashedPassword, email]).catch(err => {
         console.error('Error updating user password:', err);
         throw new Error('Database error while updating user password.');
