@@ -106,14 +106,13 @@ static async login(email, password) {
   return { sid: session.sid, lang: user.lang };
 }
 
-
-  static async logout(sid) {
+static async logout(sid) {
     if (!sid) throw new Error('[oAuth] Session ID is required for logout.');
 
     const token = sid.split(' ')[1];
     if (!token) throw new Error('[oAuth] Invalid session token format.');
 
-    return await db.promise().execute('DELETE FROM session WHERE sid = ?', [sid])
+    return await db.promise().execute('DELETE FROM session WHERE sid = ?', [token])
       .then(() => {
         console.log('[oAuth] User logged out successfully.');
         return true;
@@ -122,7 +121,7 @@ static async login(email, password) {
         console.error('Error during logout:', err);
         throw new Error('[oAuth] Error during logout.');
       });
-  }
+}
 
   static async getNewOtp(email) {
     try {
