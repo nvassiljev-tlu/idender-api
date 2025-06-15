@@ -29,13 +29,8 @@ class UsersController {
       profile_picture: req.file ? `/uploads/${req.file.filename}` : null
     };
 
-    try {
-      const updated = await this.service.update(req.params.id, data);
-      return res.status(200).json(createResponse(200, updated));
-    } catch (err) {
-      console.error('Update failed:', err.message);
-      return res.status(400).json(createResponse(400, {}, { message: err.message }));
-    }
+    const updated = await this.service.update(req.params.id, data);
+    res.status(200).json(createResponse(200, updated));
   };
 
   activate = async (req, res) => {

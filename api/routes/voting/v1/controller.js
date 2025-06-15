@@ -1,42 +1,50 @@
 const VotingService = require('./service');
 const createResponse = require('../../../middlewares/createResponse');
+const { getUserId } = require('../../../middlewares/getUserId');
 
 class VotingController {
-  static getGlobalVotingInfo(req, res) {
-    console.log("getGlobalVotingInfo");
+  static async getIdeaForVoting(req, res) {
     try {
-      const data = VotingService.getGlobalInfo();
+      const userId = await getUserId(req);
+      const suggestion = await VotingService.getRandomUnvotedSuggestion(userId);
+
+      if (!suggestion) {
+        return res.status(204).json(createResponse(204, {}));
+      }
+
+      res.status(200).json(createResponse(200, suggestion));
+    } catch (e) {
+      res.status(500).json(createResponse(500, null, e.message));
+    }
+  }
+
+
+  static async getVotesForIdea(req, res) {
+    try {
+      const ideaId = parseInt(req.params.idea_id);
+      const data = await VotingService.getVotesForIdea(ideaId);
       res.status(200).json(createResponse(200, data));
     } catch (e) {
       res.status(500).json(createResponse(500, null, e.message));
     }
   }
 
-  static getVotesForIdea(req, res) {
-    console.log("getVotesForIdea");
+  static async voteOnSuggestion(req, res) {
     try {
-      const ideaId = req.params.idea_id;
-      const data = VotingService.getVotesForIdea(ideaId);
-      res.status(200).json(createResponse(200, data));
-    } catch (e) {
-      res.status(500).json(createResponse(500, null, e.message));
-    }
-  }
-
-  static submitVoteForIdea(req, res) {
-    console.log("submitVoteForIdea");
-    try {
-      const ideaId = req.params.idea_id;
-      const userId = req.userId;
+      const userId = await getUserId(req);
+      const suggestionId = parseInt(req.params.idea_id);
       const { reaction } = req.body;
 
-      if (!userId) throw new Error("User not authenticated");
-      if (reaction === undefined) throw new Error("Reaction is required");
+      if (![0, 1].includes(reaction)) {
+        return res.status(400).json(createResponse(400, null, "Invalid reaction"));
+      }
 
-      VotingService.vote(ideaId, userId, reaction);
-      res.status(200).json(createResponse(200, { success: true }));
+      const result = await VotingService.vote(userId, suggestionId, reaction);
+      if (result) {
+        return await VotingController.getIdeaForVoting(req, res);
+      }
     } catch (e) {
-      res.status(400).json(createResponse(400, null, e.message));
+      res.status(500).json(createResponse(500, null, e.message));
     }
   }
 }

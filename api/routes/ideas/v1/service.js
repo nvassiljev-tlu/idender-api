@@ -52,7 +52,7 @@ class IdeasService {
     for (const category of categories) {
       await db.promise().query(
         'INSERT INTO suggestions_categories (suggestion_id, category_id) VALUES (?, ?)',
-        [idea.id, category]
+        [query[0].insertId, category]
       );
     }
 
@@ -200,21 +200,47 @@ class IdeasService {
     return categories;
   }
 
-  static async setStatus(id, status) {
-    if (typeof status !== 'number' || ![0, 1, 2, 3, 4, 5].includes(status)) {
+  static async setStatus(id, newStatus) {
+    if (typeof newStatus !== 'number' || ![0, 1, 2, 3, 4, 5].includes(newStatus)) {
       throw new Error('Invalid status value');
+    }
+
+    const [rows] = await db.promise().execute(
+      'SELECT status FROM suggestions WHERE id = ?',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      throw new Error('Idea not found');
+    }
+
+    const currentStatus = rows[0].status;
+
+    const validTransitions = {
+      0: [1, 5],
+      1: [2, 5],
+      2: [3, 4],
+      3: [],
+      4: [],
+      5: [0]
+    };
+
+    if (!validTransitions[currentStatus].includes(newStatus)) {
+      throw new Error(`Cannot transition from status ${currentStatus} to ${newStatus}`);
     }
 
     const [result] = await db.promise().execute(
       'UPDATE suggestions SET status = ? WHERE id = ?',
-      [status, id]
+      [newStatus, id]
     );
 
-    if (result.affectedRows === 0) throw new Error('Idea not found');
+    if (result.affectedRows === 0) {
+      throw new Error('Failed to update status');
+    }
 
     return { success: true };
   }
-  
+
 }
 
 module.exports = IdeasService;

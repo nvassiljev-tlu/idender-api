@@ -1,54 +1,139 @@
-const { users, suggestions, scopes, suggestion_reactions } = require('../../../configs/database-simulator.js');
-const crypto = require('crypto');
+const { DateTime } = require('luxon');
+const db = require('../../../middlewares/database');
 
 class VotingService {
-  static getGlobalInfo() {
-    const ideasWithReactions = {};
+  static async getRandomUnvotedSuggestion(userId) {
+    const [rows] = await db.promise().query(`
+      SELECT s.*
+      FROM suggestions s
+      WHERE s.status = 1
+      AND s.id NOT IN (
+        SELECT ideaId FROM vote WHERE userId = ?
+      )
+      ORDER BY RAND()
+      LIMIT 1
+    `, [userId]);
 
-    for (const reaction of suggestion_reactions) {
-      const ideaId = reaction.suggestion_id;
-      if (!ideasWithReactions[ideaId]) {
-        ideasWithReactions[ideaId] = { likes: 0, dislikes: 0 };
+    if (rows.length === 0) {
+      return null;
+    } else {
+      const idea = rows[0];
+      let idea_user;
+      if (idea.is_anonymus === 1) {
+        idea_user = 'Anonymous';
+      } else {
+        const [userRows] = await db.promise().query(`
+          SELECT first_name, last_name FROM users WHERE id = ?
+        `, [idea.user_id]);
+        idea_user = userRows.length > 0 ? `${userRows[0].first_name} ${userRows[0].last_name}` : 'Unknown User';
       }
-      if (reaction.reaction === 1) {
-        ideasWithReactions[ideaId].likes += 1;
-      } else if (reaction.reaction === 0) {
-        ideasWithReactions[ideaId].dislikes += 1;
+      return {
+        title: idea.title,
+        description: idea.description,
+        author: idea_user,
+        id: idea.id,
       }
     }
-
-    return Object.entries(ideasWithReactions).map(([ideaId, counts]) => ({
-      ideaId,
-      likes: counts.likes,
-      dislikes: counts.dislikes,
-    }));
   }
 
-  static getVotesForIdea(ideaId) {
-    return suggestion_reactions.filter(v => v.suggestion_id === parseInt(ideaId, 10));
+  static async getVotesForIdea(ideaId) {
+    const [[idea]] = await db.promise().query(`
+      SELECT id, title, description, user_id, is_anonymus
+      FROM suggestions
+      WHERE id = ?
+    `, [ideaId]);
+    if (!idea) {
+      throw new Error('Idea not found');
+    }
+    const [votes] = await db.promise().query(`
+      SELECT userId, reaction
+      FROM vote
+      WHERE ideaId = ?
+    `, [ideaId]);;
+    const [userRows] = await db.promise().query(`
+      SELECT first_name, last_name FROM users WHERE id = ?
+    `, [idea.user_id]);
+    const idea_user = userRows.length > 0 ? `${userRows[0].first_name} ${userRows[0].last_name}` : 'Unknown User';
+    const likes = votes.filter(v => v.reaction === 1).length;
+    const dislikes = votes.filter(v => v.reaction === 0).length;
+    return {
+      id: idea.id,
+      title: idea.title,
+      description: idea.description,
+      author: idea_user,
+      user_id: idea.user_id,
+      likes,
+      dislikes,
+    }
   }
 
 
-  static vote(ideaId, userId, reaction) {
-    if (![0, 1].includes(reaction)) {
-      throw new Error("Invalid reaction value. Must be 0 (dislike) or 1 (like).");
+  static async vote(userId, suggestionId, reaction) {
+    let oldStatus = null;
+    try {
+      const [[existingSuggestion]] = await db.promise().execute(
+        'SELECT status FROM suggestions WHERE id = ?',
+        [suggestionId]
+      );
+
+      if (!existingSuggestion) {
+        throw new Error('Suggestion does not exist');
+      } else {
+        oldStatus = existingSuggestion.status;
+      }
+
+      await db.promise().execute(
+        `INSERT INTO vote (ideaId, userId, reaction)
+        VALUES (?, ?, ?)`,
+        [suggestionId, userId, reaction]
+      );
+    } catch (e) {
+      if (e.code === 'ER_DUP_ENTRY') {
+        throw new Error('You already voted on this suggestion');
+      }
+      throw e;
     }
 
-    const ideaIdNum = parseInt(ideaId, 10);
-    const ideaExists = suggestions.some(s => s.id === ideaIdNum);
-    if (!ideaExists) {
-      throw new Error("Idea does not exist");
+    if (oldStatus !== 1) {
+      return true;
     }
 
-    const newReaction = {
-      id: crypto.randomUUID(),
-      reaction,
-      suggestion_id: ideaIdNum,
-      user_id: userId,
-      created_at: new Date(),
-    };
-    console.log('New reaction added:', newReaction, 'created_at:', newReaction.created_at.toISOString());
-    suggestion_reactions.push(newReaction);
+    const nowTallinn = DateTime.now().setZone('Europe/Tallinn');
+    const lastMonth = nowTallinn.minus({ months: 1 }).toMillis();
+
+    const [[likes]] = await db.promise().query(`
+      SELECT COUNT(*) as count FROM vote
+      WHERE ideaId = ? AND reaction = 1
+    `, [suggestionId]);
+
+    const [[dislikes]] = await db.promise().query(`
+      SELECT COUNT(*) as count FROM vote
+      WHERE ideaId = ? AND reaction = 0
+    `, [suggestionId]);
+
+    const [[activeUsers]] = await db.promise().query(`
+      SELECT COUNT(DISTINCT userId) as count
+      FROM session
+      WHERE updatedAt >= ?
+    `, [lastMonth]);
+
+    const likeThreshold = Math.ceil(activeUsers.count * 0.4);
+    const dislikeThreshold = Math.ceil(activeUsers.count * 0.6);
+
+    let newStatus = null;
+    if (likes.count >= likeThreshold) {
+      newStatus = 2;
+    } else if (dislikes.count >= dislikeThreshold) {
+      newStatus = 6;
+    }
+
+    if (newStatus !== null) {
+      await db.promise().execute(`
+        UPDATE suggestions SET status = ? WHERE id = ?
+      `, [newStatus, suggestionId]);
+    }
+
+    return true;
   }
 }
 

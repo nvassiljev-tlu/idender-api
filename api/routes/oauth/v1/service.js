@@ -1,6 +1,5 @@
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
-const { users, user_scopes, sessions, otps, scopes } = require('../../../configs/database-simulator');
 const db = require('../../../middlewares/database')
 const { DateTime } = require('luxon');
 const checkScopes = require('../../../middlewares/checkScopes');
