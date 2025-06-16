@@ -1,5 +1,6 @@
 const { DateTime } = require('luxon');
 const db = require('../../../middlewares/database');
+const createNewsEntry = require('../../../middlewares/createNewsEntry');
 
 class VotingService {
   static async getRandomUnvotedSuggestion(userId) {
@@ -70,15 +71,17 @@ class VotingService {
 
   static async vote(userId, suggestionId, reaction) {
     let oldStatus = null;
+    let idea;
     try {
       const [[existingSuggestion]] = await db.promise().execute(
-        'SELECT status FROM suggestions WHERE id = ?',
+        'SELECT * FROM suggestions WHERE id = ?',
         [suggestionId]
       );
 
       if (!existingSuggestion) {
         throw new Error('Suggestion does not exist');
       } else {
+        idea = existingSuggestion;
         oldStatus = existingSuggestion.status;
       }
 
@@ -131,6 +134,20 @@ class VotingService {
       await db.promise().execute(`
         UPDATE suggestions SET status = ? WHERE id = ?
       `, [newStatus, suggestionId]);
+
+      if (newStatus === 2) {
+        createNewsEntry(
+          `Idea ${idea.title} is pending school administration revire`,
+          `Idea ${idea.title} has received enough positive votes and is now pending review by the school administration.`,
+          1
+        )
+      } else if (newStatus === 6) {
+        createNewsEntry(
+          `Idea ${idea.title} has been rejected`,
+          `Idea ${idea.title} has received many negative votes and has been rejected.`,
+          1
+        );
+      }
     }
 
     return true;
