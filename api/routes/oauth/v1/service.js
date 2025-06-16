@@ -226,12 +226,15 @@ static async logout(sid) {
     if (rows2.length === 0) throw new Error('[oAuth] User not found');
     const user = rows2[0];
 
+    const isAdmin = await checkScopes(user.id, ['user:admin']);
+
     return {
       user: {
         id: user.id,
         email: user.email,
         first_name: user.first_name,
-        last_name: user.last_name
+        last_name: user.last_name,
+        is_admin: isAdmin
       },
     };
   }
