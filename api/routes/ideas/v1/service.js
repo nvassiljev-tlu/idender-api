@@ -4,8 +4,17 @@ const { getUserId } = require('../../../middlewares/getUserId');
 const { DateTime } = require('luxon');
 
 class IdeasService {
-  static async listIdeas() {
-    const [suggestions] = await db.promise().query('SELECT * FROM suggestions');
+  static async listIdeas(status) {
+    if (typeof status !== 'number' || ![0, 1, 2, 3, 4, 5, 6, 123456].includes(status)) {
+      throw new Error('Invalid status value');
+    }
+    let query = 'SELECT * FROM suggestions';
+    const params = [];
+    if (status !== 123456) {
+      query += ' WHERE status = ?';
+      params.push(status);
+    }
+    const [suggestions] = await db.promise().query(query, params);
     return suggestions;
   }
 
@@ -201,7 +210,7 @@ class IdeasService {
   }
 
   static async setStatus(id, newStatus) {
-    if (typeof newStatus !== 'number' || ![0, 1, 2, 3, 4, 5].includes(newStatus)) {
+    if (typeof newStatus !== 'number' || ![0, 1, 2, 3, 4, 5, 6].includes(newStatus)) {
       throw new Error('Invalid status value');
     }
 
@@ -222,7 +231,8 @@ class IdeasService {
       2: [3, 4],
       3: [],
       4: [],
-      5: [0]
+      5: [0],
+      6: []
     };
 
     if (!validTransitions[currentStatus].includes(newStatus)) {

@@ -6,7 +6,8 @@ const { getUserId } = require('../../../middlewares/getUserId')
 class IdeasController {
   static async list(req, res) {
     try {
-      const ideas = await IdeasService.listIdeas();
+      const status = req.query.status ? parseInt(req.query.status) : 123456;
+      const ideas = await IdeasService.listIdeas(status);
       res.status(200).json(createResponse(200, ideas));
     } catch (err) {
       res.status(400).json(createResponse(400, {}, { error: err.message }));
