@@ -103,6 +103,16 @@ class IdeasService {
       idea.last_name = user?.last_name || null;
     }
 
+    const [categories] = await db.promise().query(
+      'SELECT c.* FROM suggestions_categories sc INNER JOIN categories c ON sc.category_id = c.id WHERE sc.suggestion_id = ?',
+      [id]
+    );
+
+    idea.categories = categories.map(category => ({
+      id: category.id,
+      name: category.name
+    }));
+
     return idea;
   }
 
