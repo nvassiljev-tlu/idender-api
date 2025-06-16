@@ -207,7 +207,7 @@ static async logout(sid) {
       });
     }
 
-    await db.promise().execute('DELETE FROM user_scope WHERE userId = ? AND scopeId = ?', [user.id, 14]).catch(err => {
+    await db.promise().execute('DELETE FROM user_scope WHERE userId = ? AND scopeId = ?', [user.id, 2]).catch(err => {
       console.error('Error deleting user scope:', err);
     });
 
