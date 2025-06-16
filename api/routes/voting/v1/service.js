@@ -137,7 +137,7 @@ class VotingService {
 
       if (newStatus === 2) {
         createNewsEntry(
-          `Idea ${idea.title} is pending school administration revire`,
+          `Idea ${idea.title} is pending school administration review`,
           `Idea ${idea.title} has received enough positive votes and is now pending review by the school administration.`,
           1
         )
