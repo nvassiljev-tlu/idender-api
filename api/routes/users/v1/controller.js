@@ -44,6 +44,13 @@ class UsersController {
     res.status(200).json(createResponse(200, result));
   };
 
+  getScopes = async (req, res) => {
+    const userId = req.params.id;
+    const result = await this.service.getScopes(userId);
+    if (!result) return res.status(404).json(createResponse(404, {}, { message: "Not found" }));
+    res.status(200).json(createResponse(200, result));
+  }
+
   assignScopes = async (req, res) => { 
     const result = await this.service.assignScopes(req.params.id, req.body.scopeIds);
     res.status(200).json(createResponse(200, result));

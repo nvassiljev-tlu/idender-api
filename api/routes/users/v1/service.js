@@ -56,8 +56,17 @@ class UsersService {
       await db.promise().execute('INSERT IGNORE INTO user_scope (userId, scopeId) VALUES (?, 1)', [id]);
     } else if (active === false) {
       await db.promise().execute('DELETE FROM user_scope WHERE userId = ? AND scopeId = 1', [id]);
+      await db.promise().execute('DELETE FROM sessions WHERE userId = ?', [id]);
     }
     return this.getById(id);
+  }
+
+  async getScopes(userId) {
+    const [scopes] = await db.promise().query(
+      'SELECT s.id, s.name FROM user_scope us JOIN scope s ON us.scopeId = s.id WHERE us.userId = ?',
+      [userId]
+    );
+    return scopes;
   }
 
   async assignScopes(userId, scopeIds) {
