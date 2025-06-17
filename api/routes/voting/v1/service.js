@@ -132,7 +132,7 @@ class VotingService {
     `, [lastMonth]);
 
     const likeThreshold = Math.ceil(activeUsers.count * 0.4);
-    const dislikeThreshold = Math.ceil(activeUsers.count * 0.6);
+    const dislikeThreshold = Math.ceil(activeUsers.count * 0.5);
 
     let newStatus = null;
     if (likes.count >= likeThreshold) {
