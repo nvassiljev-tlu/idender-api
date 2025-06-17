@@ -28,11 +28,22 @@ class VotingService {
         `, [idea.user_id]);
         idea_user = userRows.length > 0 ? `${userRows[0].first_name} ${userRows[0].last_name}` : 'Unknown User';
       }
+      const [categories] = await db.promise().query(
+          'SELECT c.* FROM suggestions_categories sc INNER JOIN categories c ON sc.category_id = c.id WHERE sc.suggestion_id = ?',
+          [idea.id]
+      );
+
+      idea.categories = categories.map(category => ({
+        id: category.id,
+        name: category.name
+      }));
+
       return {
         title: idea.title,
         description: idea.description,
         author: idea_user,
         id: idea.id,
+        categories: idea.categories
       }
     }
   }
