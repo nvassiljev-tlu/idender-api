@@ -52,10 +52,11 @@ class UsersService {
   }
 
   async setActive(id, active) {
-    await db.promise().query(
-      'UPDATE users SET is_active = ? WHERE id = ?',
-      [active, id]
-    );
+    if (active === true) {
+      await db.promise().execute('INSERT IGNORE INTO user_scope (userId, scopeId) VALUES (?, 1)', [id]);
+    } else if (active === false) {
+      await db.promise().execute('DELETE FROM user_scope WHERE userId = ? AND scopeId = 1', [id]);
+    }
     return this.getById(id);
   }
 
