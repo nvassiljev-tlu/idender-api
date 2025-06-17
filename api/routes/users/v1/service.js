@@ -13,8 +13,6 @@ class UsersService {
       const isActive = await checkScopes(user.id, ["auth:access"])
       const isAdmin = await checkScopes(user.id, ["user:admin"])
 
-      console.log(`User ${user.id} - Active: ${isActive}, Admin: ${isAdmin}`);
-
       user.is_active = isActive;
       user.is_admin = isAdmin;
       return user;

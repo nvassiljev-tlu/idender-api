@@ -227,6 +227,7 @@ static async logout(sid) {
     const user = rows2[0];
 
     const isAdmin = await checkScopes(user.id, ['user:admin']);
+    const isSuperAdmin = await checkScopes(user.id, ['user:superadmin']);
 
     return {
       user: {
@@ -234,7 +235,8 @@ static async logout(sid) {
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
-        is_admin: isAdmin
+        is_admin: isAdmin,
+        ...(isSuperAdmin ? { is_superadmin: true } : {})
       },
     };
   }

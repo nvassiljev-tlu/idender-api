@@ -1,3 +1,4 @@
+const checkScopes = require('../../../middlewares/checkScopes');
 const createResponse = require('../../../middlewares/createResponse');
 const { getUserId } = require('../../../middlewares/getUserId')
 const { requireScopes } = require('../../../middlewares/requireScopes');
@@ -52,13 +53,12 @@ class UsersController {
     const userId = await getUserId(req)
     const requestedUserId = req.params.id;
     if (userId !== requestedUserId) {
-      const hasUserAdminScope = req.allScopes.find(s => s.name === 'user:admin')?.id;
-      const hasAdmin = hasUserAdminScope && req.userScopeIds.includes(hasUserAdminScope);
+      const hasAdmin = await checkScopes(userId, ['user:admin'])
       if (!hasAdmin) {
         return res.status(403).json(createResponse(403, {}, { message: "You are not authorized to perform this action." }));
       }
     }
-    const ideas = await this.service.getIdeasByUser(userId);
+    const ideas = await this.service.getIdeasByUser(requestedUserId);
     res.status(200).json(createResponse(200, ideas));
   };
 }
