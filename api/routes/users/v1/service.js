@@ -1,9 +1,26 @@
 const db = require('../../../middlewares/database');
+const checkScopes = require('../../../middlewares/checkScopes');
 
 class UsersService {
   async getAll() {
     const [users] = await db.promise().query('SELECT * FROM users');
-    return users;
+
+    const processedUsers = await Promise.all(users.map(async user => {
+      delete user.password;
+      delete user.created_at;
+      delete user.lang;
+
+      const isActive = await checkScopes(user.id, ["auth:access"])
+      const isAdmin = await checkScopes(user.id, ["user:admin"])
+
+      console.log(`User ${user.id} - Active: ${isActive}, Admin: ${isAdmin}`);
+
+      user.is_active = isActive;
+      user.is_admin = isAdmin;
+      return user;
+    }));
+
+    return processedUsers;
   }
 
   async getById(id) {
