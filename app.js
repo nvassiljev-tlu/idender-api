@@ -26,21 +26,28 @@ app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
 
 app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    console.log(`Request from origin: ${origin}`);
-    if (allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-        res.header('Access-Control-Allow-Credentials', 'true');
-    }
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    if (req.method === 'OPTIONS') {
-        res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, PATCH, PUT');
-        return res.status(200).json({
-            status: '200 OK'
-        });
-    }
-    next();
-})
+  const origin = req.headers.origin;
+  console.log(`Request from origin: ${origin}`);
+
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header(
+      'Access-Control-Allow-Methods',
+      'GET, POST, DELETE, PATCH, PUT, OPTIONS'
+    );
+    res.header(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    );
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
