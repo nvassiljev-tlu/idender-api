@@ -17,7 +17,8 @@ const newsRouter = require('./api/routes/news/v1/router');
 
 const allowedOrigins = [
   'http://172.19.2.236:3000',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'https://idender-staging.services.nvassiljev.com'
 ];
 
 app.use(bodyParser.urlencoded({extended: false}));
