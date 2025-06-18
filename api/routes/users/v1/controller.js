@@ -46,15 +46,21 @@ class UsersController {
 
   getScopes = async (req, res) => {
     const userId = req.params.id;
-    const result = await this.service.getScopes(userId);
+    const result = await this.service.getScopes(userId)
     if (!result) return res.status(404).json(createResponse(404, {}, { message: "Not found" }));
     res.status(200).json(createResponse(200, result));
   }
 
   assignScopes = async (req, res) => { 
     const currentUserId = await getUserId(req);
-    const result = await this.service.assignScopes(req.params.id, req.body.scopes, currentUserId);
-    res.status(200).json(createResponse(200, result));
+    if (!req.body.scopes || !Array.isArray(req.body.scopes) || req.body.scopes.length === 0) {
+      return res.status(400).json(createResponse(400, {}, { message: "At least one scope must be provided." }));
+    }
+    const result = await this.service.assignScopes(req.params.id, req.body.scopes, currentUserId)
+    if (result.status === 'error') {
+      return res.status(400).json(createResponse(400, {}, { message: result.message }));
+    }
+    res.status(200).json(createResponse(200, result.scopes));
   };
 
   getIdeas = async (req, res) => { 

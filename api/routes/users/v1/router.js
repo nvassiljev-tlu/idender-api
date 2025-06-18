@@ -14,7 +14,7 @@ router.get('/:id/scopes', requireScopes(['auth:access', 'users:scopes']), contro
 router.patch('/:id', requireScopes(['auth:access']), controller.update);
 router.post('/:id/activate', requireScopes(['auth:access', 'users:moderate']), controller.activate);
 router.post('/:id/deactivate', requireScopes(['auth:access', 'users:moderate']), controller.deactivate);
-router.post('/:id/scopes', requireScopes(['auth:access', 'users:moderate', 'users:scopes']), controller.assignScopes);
+router.patch('/:id/scopes', requireScopes(['auth:access', 'users:moderate', 'users:scopes']), controller.assignScopes);
 
 
 module.exports = router;
