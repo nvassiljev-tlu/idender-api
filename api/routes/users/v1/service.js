@@ -84,6 +84,14 @@ class UsersService {
         throw new Error('At least one scope must be provided');
       }
 
+      if (scopeIds.includes(1) || scopeIds.includes(2)) {
+        throw new Error('You cannot assign or remove auth:access or auth:signup scopes directly.');
+      } else if (currentScopes.some(scope => scope.scopeId === 1) && !scopeIds.includes(1) && currentUserId !== userId) {
+        throw new Error('You cannot remove auth:access scope from another user');
+      } else if (currentScopes.some(scope => scope.scopeId === 2) && !scopeIds.includes(2) && currentUserId !== userId) {
+        throw new Error('You cannot remove auth:signup scope from another user');
+      }
+
       if (scopeIds.includes(3)) {
         const hasAdmin = await checkScopes(currentUserId, ['user:admin']);
         if (!hasAdmin) {
