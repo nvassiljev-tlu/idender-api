@@ -69,7 +69,54 @@ class UsersService {
     return scopes;
   }
 
-  async assignScopes(userId, scopeIds) {
+  async assignScopes(userId, scopeIds, currentUserId) {
+
+    if (userId === 1) {
+      throw new Error('You cannot modify the service account');
+    }
+
+    const [currentScopes] = await db.promise().query(
+      'SELECT scopeId FROM user_scope WHERE userId = ?',
+      [userId]
+    );
+
+    if (scopeIds.length === 0) {
+      throw new Error('At least one scope must be provided');
+    }
+
+    if (scopeIds.includes(3)) {
+      const hasAdmin = await checkScopes(currentUserId, ['user:admin']);
+      if (!hasAdmin) {
+        throw new Error('You are not authorized to assign admin scope');
+      }
+    } else if (currentScopes.some(scope => scope.scopeId === 3) && !scopeIds.includes(3) && currentUserId !== userId) {
+      const hasSuperAdmin = await checkScopes(currentUserId, ['user:superadmin']);
+      if (!hasSuperAdmin) {
+        throw new Error('You are not authorized to remove admin scope from another user');
+      }
+    }
+
+    if (scopeIds.includes(15)) {
+      const [[superadminCount]] = await db.promise().query(
+        'SELECT COUNT(*) as count FROM user_scope WHERE scopeId = 15'
+      );
+      const hasSuperAdmin = await checkScopes(currentUserId, ['user:superadmin']);
+      if (!hasSuperAdmin) {
+        throw new Error('You are not authorized to assign superadmin scope');
+      }
+      if (superadminCount.count >= 1 && currentUserId !== userId) {
+        throw new Error('Only one user can have the superadmin scope at a time');
+      }
+    } else if (currentScopes.some(scope => scope.scopeId === 15) && !scopeIds.includes(15) && currentUserId !== userId) {
+      const hasSuperAdmin = await checkScopes(currentUserId, ['user:superadmin']);
+      if (!hasSuperAdmin) {
+        throw new Error('You are not authorized to remove superadmin scope from another user');
+      }
+      if (currentUserId === userId) {
+        throw new Error('You cannot remove superadmin scope from yourself, you must transfer it first.');
+      }
+    }
+
     await db.promise().query('DELETE FROM user_scope WHERE userId = ?', [userId]);
     
     for (const scopeId of scopeIds) {

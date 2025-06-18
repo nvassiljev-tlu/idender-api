@@ -52,7 +52,8 @@ class UsersController {
   }
 
   assignScopes = async (req, res) => { 
-    const result = await this.service.assignScopes(req.params.id, req.body.scopeIds);
+    const currentUserId = await getUserId(req);
+    const result = await this.service.assignScopes(req.params.id, req.body.scopes, currentUserId);
     res.status(200).json(createResponse(200, result));
   };
 
