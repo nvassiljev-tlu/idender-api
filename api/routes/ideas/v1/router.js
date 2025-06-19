@@ -4,7 +4,7 @@ const { requireScopes } = require('../../../middlewares/requireScopes')
 
 const router = express.Router();
 
-router.get('/', requireScopes(['auth:access', 'ideas:read', 'user:admin']), IdeasController.list);
+router.get('/', requireScopes(['auth:access', 'ideas:read', 'ideas:moderate']), IdeasController.list);
 router.post('/', requireScopes(['auth:access', 'ideas:read', 'ideas:create']), IdeasController.create);
 router.get('/categories', requireScopes(['auth:access', 'ideas:read']), IdeasController.getCategories);
 router.get('/:id', requireScopes(['auth:access', 'ideas:read']), IdeasController.getById);

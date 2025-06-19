@@ -7,10 +7,10 @@ const UsersController = require('./controller');
 const service = new UsersService();
 const controller = new UsersController(service);
 
-router.get('/', requireScopes(['auth:access', 'user:admin']), controller.list);
+router.get('/', requireScopes(['auth:access', 'users:moderate']), controller.list);
 router.get('/:id', requireScopes(['auth:access']), controller.get);
 router.get('/:id/ideas', requireScopes(['auth:access', 'ideas:read']), controller.getIdeas);
-router.get('/:id/scopes', requireScopes(['auth:access', 'users:scopes']), controller.getScopes);
+router.get('/:id/scopes', requireScopes(['auth:access', 'users:moderate', 'users:scopes']), controller.getScopes);
 router.patch('/:id', requireScopes(['auth:access']), controller.update);
 router.post('/:id/activate', requireScopes(['auth:access', 'users:moderate']), controller.activate);
 router.post('/:id/deactivate', requireScopes(['auth:access', 'users:moderate']), controller.deactivate);
