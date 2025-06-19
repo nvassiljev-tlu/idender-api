@@ -49,14 +49,20 @@ function requireScopes(requiredScopeNames = []) {
 
       let userScopeIds = user_scopes.map((us) => us.scopeId);
 
-      // Special logic for scope ID 3
+      console.log("[Scopes] User scope IDs:", userScopeIds);
+      
       const hasScope3 = userScopeIds.includes(3);
       if (hasScope3) {
-        // Treat user as having all scope IDs except 2 and 15
-        userScopeIds = scopes
+        // Add all scope IDs except 2 and 15 to the user's existing scopes
+        const additionalScopeIds = scopes
           .filter((s) => s.id !== 2 && s.id !== 15)
           .map((s) => s.id);
+
+        // Merge and deduplicate
+        userScopeIds = Array.from(new Set([...userScopeIds, ...additionalScopeIds]));
       }
+
+      console.log("[Scopes] User scopes:", userScopeIds);
 
       const hasAllScopes = requiredScopeIds.every((reqId) => userScopeIds.includes(reqId));
 
