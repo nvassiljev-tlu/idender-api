@@ -193,7 +193,7 @@ class UsersService {
     return this.getScopes(targetUserId);
   }
 
-  async transferSuperAdmin(targetUserId, currentUserId) {
+  async transferSuperAdmin(currentUserId, targetUserId) {
     if (targetUserId === "1") {
       throw new Error('You cannot modify the service account.');
     }
