@@ -28,8 +28,8 @@ class UsersService {
   }
 
   async update(id, data) {
-    const { preferred_language } = data
-    if (!preferred_language) {
+    const { preferred_language, first_name, last_name } = data
+    if (!preferred_language && !first_name && !last_name) {
       throw new Error('At least one field must be provided for update');
     } else {
       const updates = [];
@@ -38,6 +38,14 @@ class UsersService {
       if (preferred_language) {
         updates.push('lang = ?');
         values.push(preferred_language);
+      }
+      if (first_name) {
+        updates.push('first_name = ?');
+        values.push(first_name);
+      }
+      if (last_name) {
+        updates.push('last_name = ?');
+        values.push(last_name);
       }
 
       values.push(id);

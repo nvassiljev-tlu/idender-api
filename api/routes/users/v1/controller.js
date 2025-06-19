@@ -22,11 +22,16 @@ class UsersController {
   update = async (req, res) => {
     const userId = await getUserId(req);
     if (userId !== req.params.id) {
-      return res.status(403).json(createResponse(403, {}, { message: "You are not authorized to perform this action." }));
+      const hasAdmin = await checkScopes(userId, ['user:admin']);
+      if (!hasAdmin) {
+        return res.status(403).json(createResponse(403, {}, { message: "You are not authorized to perform this action." }));
+      }
     }
 
     const data = {
       preferred_language: req.body.preferred_language,
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
     };
 
     const updated = await this.service.update(req.params.id, data);
