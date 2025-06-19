@@ -19,6 +19,9 @@ class UsersController {
   };
 
   update = async (req, res) => {
+    if (req.params.id === "1") {
+      return res.status(403).json(createResponse(403, {}, { message: "You cannot modify the service account." }));
+    }
     const userId = await getUserId(req);
     if (userId !== req.params.id) {
       const hasAdmin = await checkScopes(userId, ['users:moderate']);
@@ -38,11 +41,17 @@ class UsersController {
   };
 
   activate = async (req, res) => {
+    if (req.params.id === "1") {
+      return res.status(403).json(createResponse(403, {}, { message: "You cannot modify the service account." }));
+    }
     const result = await this.service.setActive(req.params.id, true);
     res.status(200).json(createResponse(200, result));
   };
 
   deactivate = async (req, res) => {
+    if (req.params.id === "1") {
+      return res.status(403).json(createResponse(403, {}, { message: "You cannot modify the service account." }));
+    }
     const result = await this.service.setActive(req.params.id, false);
     res.status(200).json(createResponse(200, result));
   };
