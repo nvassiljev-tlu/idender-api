@@ -1,7 +1,6 @@
 const checkScopes = require('../../../middlewares/checkScopes');
 const createResponse = require('../../../middlewares/createResponse');
 const { getUserId } = require('../../../middlewares/getUserId')
-const { requireScopes } = require('../../../middlewares/requireScopes');
 
 class UsersController {
   constructor(service) {

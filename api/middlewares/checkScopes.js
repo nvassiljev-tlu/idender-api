@@ -18,7 +18,16 @@ async function checkScopes(userId, requiredScopeNames = []) {
       [userId]
     );
 
-    const userScopeIds = userScopes.map((us) => us.scopeId);
+    let userScopeIds = userScopes.map((us) => us.scopeId);
+
+    const hasScope3 = userScopeIds.includes(3);
+    if (hasScope3) {
+      const additionalScopeIds = scopes
+        .filter((s) => s.id !== 2 && s.id !== 15)
+        .map((s) => s.id);
+
+      userScopeIds = Array.from(new Set([...userScopeIds, ...additionalScopeIds]));
+    }
 
     return requiredScopeIds.every(reqId => userScopeIds.includes(reqId));
   } catch (error) {

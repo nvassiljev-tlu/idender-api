@@ -48,8 +48,6 @@ function requireScopes(requiredScopeNames = []) {
       );
 
       let userScopeIds = user_scopes.map((us) => us.scopeId);
-
-      console.log("[Scopes] User scope IDs:", userScopeIds);
       
       const hasScope3 = userScopeIds.includes(3);
       if (hasScope3) {
@@ -59,8 +57,6 @@ function requireScopes(requiredScopeNames = []) {
 
         userScopeIds = Array.from(new Set([...userScopeIds, ...additionalScopeIds]));
       }
-
-      console.log("[Scopes] User scopes:", userScopeIds);
 
       const hasAllScopes = requiredScopeIds.every((reqId) => userScopeIds.includes(reqId));
 
