@@ -8,13 +8,18 @@ class IdeasService {
     if (typeof status !== 'number' || ![0, 1, 2, 3, 4, 5, 6, 123456].includes(status)) {
       throw new Error('Invalid status value');
     }
-    let query = 'SELECT * FROM suggestions';
+    let query = `
+      SELECT s.*, u.first_name, u.last_name
+      FROM suggestions s
+      LEFT JOIN users u ON s.user_id = u.id
+    `;
     const params = [];
     if (status !== 123456) {
-      query += ' WHERE status = ?';
+      query += ' WHERE s.status = ?';
       params.push(status);
     }
     const [suggestions] = await db.promise().query(query, params);
+    
     return suggestions;
   }
 
