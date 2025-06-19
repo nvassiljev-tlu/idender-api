@@ -1,7 +1,7 @@
-const crypto = require('crypto');
 const db = require('../../../middlewares/database');
 const { getUserId } = require('../../../middlewares/getUserId');
 const { DateTime } = require('luxon');
+const createNewsEntry = require('../../../middlewares/createNewsEntry');
 
 class IdeasService {
   static async listIdeas(status) {
@@ -144,22 +144,6 @@ class IdeasService {
     return { success: true };
   }
 
-  /*
-  static async performAction(id, action) {
-    if (!action) throw new Error('Action is required');
-    
-    const idea = await this.getIdeaById(id);
-    if (!idea) throw new Error('Idea not found');
-
-    return { 
-      id, 
-      action, 
-      createdAt: new Date(),
-      status: 0 // Example status, adjust as needed
-    };
-  }
-  */
-
   static async getComments(suggestion_id, isAdmin) {
     const query = `
       SELECT 
@@ -262,6 +246,32 @@ class IdeasService {
     if (result.affectedRows === 0) {
       throw new Error('Failed to update status');
     }
+
+    if (newStatus === 2) {
+        createNewsEntry(
+          `Idea ${idea.title} is pending school administration review`,
+          `Idea ${idea.title} has received enough positive votes and is now pending review by the school administration.`,
+          1
+        )
+      } else if (newStatus === 6) {
+        createNewsEntry(
+          `Idea ${idea.title} has been rejected`,
+          `Idea ${idea.title} has received many negative votes and has been rejected.`,
+          1
+        );
+      } else if (newStatus === 3) {
+        createNewsEntry(
+          `Idea ${idea.title} has been accepted`,
+          `Idea ${idea.title} has been accepted by the school administration.`,
+          1
+        );
+      } else if (newStatus === 4) {
+        createNewsEntry(
+          `Idea ${idea.title} has been declined`,
+          `Idea ${idea.title} has been declined by the school administration.`,
+          1
+        );
+      }
 
     return { success: true };
   }
