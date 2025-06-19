@@ -251,26 +251,28 @@ class IdeasService {
       [id]
     );
 
+    console.log(`Status of idea ${idea.title} updated to ${newStatus}`);
+
     if (newStatus === 2) {
-        createNewsEntry(
+        await createNewsEntry(
           `Idea ${idea.title} is pending school administration review`,
           `Idea ${idea.title} has received enough positive votes and is now pending review by the school administration.`,
           1
         )
-      } else if (newStatus === 6) {
-        createNewsEntry(
+    } else if (newStatus === 6) {
+        await createNewsEntry(
           `Idea ${idea.title} has been rejected`,
           `Idea ${idea.title} has received many negative votes and has been rejected.`,
           1
         );
-      } else if (newStatus === 3) {
-        createNewsEntry(
+    } else if (newStatus === 3) {
+        await createNewsEntry(
           `Idea ${idea.title} has been accepted`,
           `Idea ${idea.title} has been accepted by the school administration.`,
           1
         );
-      } else if (newStatus === 4) {
-        createNewsEntry(
+    } else if (newStatus === 4) {
+        await createNewsEntry(
           `Idea ${idea.title} has been declined`,
           `Idea ${idea.title} has been declined by the school administration.`,
           1
