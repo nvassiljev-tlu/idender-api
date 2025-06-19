@@ -74,6 +74,37 @@ class UsersController {
     const ideas = await this.service.getIdeasByUser(requestedUserId);
     res.status(200).json(createResponse(200, ideas));
   };
+
+  assignAdmin = async (req, res) => {
+    const targetUserId = req.params.id;
+    if (targetUserId === "1") {
+      return res.status(403).json(createResponse(403, {}, { message: "You cannot modify the service account." }));
+    }
+    const response = await this.service.assignAdmin(targetUserId);
+    res.status(200).json(createResponse(200, {}, { message: "Admin role assigned successfully.", data: response }));
+  }
+
+  deleteAdmin = async (req, res) => {
+    const targetUserId = req.params.id;
+    if (targetUserId === "1") {
+      return res.status(403).json(createResponse(403, {}, { message: "You cannot modify the service account." }));
+    }
+    const response = await this.service.deleteAdmin(targetUserId);
+    res.status(200).json(createResponse(200, {}, { message: "Admin role removed successfully.", data: response }));
+  }
+
+  transferAdmin = async (req, res) => {
+    const targetUserId = req.params.id;
+    if (targetUserId === "1") {
+      return res.status(403).json(createResponse(403, {}, { message: "You cannot modify the service account." }));
+    }
+    const currentUserId = await getUserId(req);
+    if (currentUserId === targetUserId) {
+      return res.status(403).json(createResponse(403, {}, { message: "You cannot transfer super admin role to yourself." }));
+    }
+    const response = await this.service.transferSuperAdmin(currentUserId, targetUserId);
+    res.status(200).json(createResponse(200, {}, { message: "Super admin role transferred successfully.", data: response }));
+  }
 }
 
 

@@ -148,6 +148,82 @@ class UsersService {
     );
     return suggestions;
   }
+
+  async assignAdmin(targetUserId) {
+    if (targetUserId === "1") {
+      throw new Error('You cannot modify the service account.');
+    }
+
+    const [existingAdmin] = await db.promise().query(
+      'SELECT * FROM user_scope WHERE userId = ? AND scopeId = 3',
+      [targetUserId]
+    );
+
+    if (existingAdmin.length > 0) {
+      throw new Error('User is already an admin.');
+    }
+
+    await db.promise().query(
+      'INSERT INTO user_scope (userId, scopeId) VALUES (?, 3)',
+      [targetUserId]
+    );
+
+    return this.getScopes(targetUserId);
+  }
+
+  async deleteAdmin(targetUserId) {
+    if (targetUserId === "1") {
+      throw new Error('You cannot modify the service account.');
+    }
+
+    const [existingAdmin] = await db.promise().query(
+      'SELECT * FROM user_scope WHERE userId = ? AND scopeId = 3',
+      [targetUserId]
+    );
+
+    if (existingAdmin.length === 0) {
+      throw new Error('User is not an admin.');
+    }
+
+    await db.promise().query(
+      'DELETE FROM user_scope WHERE userId = ? AND scopeId = 3',
+      [targetUserId]
+    );
+
+    return this.getScopes(targetUserId);
+  }
+
+  async transferSuperAdmin(targetUserId, currentUserId) {
+    if (targetUserId === "1") {
+      throw new Error('You cannot modify the service account.');
+    }
+
+    if (currentUserId === targetUserId) {
+      throw new Error('You cannot transfer super admin role to yourself.');
+    }
+
+    const [existingSuperAdmin] = await db.promise().query(
+      'SELECT * FROM user_scope WHERE userId = ? AND scopeId = 15',
+      [currentUserId]
+    );
+
+    if (existingSuperAdmin.length === 0) {
+      throw new Error('You are not a super admin.');
+    }
+
+    await db.promise().query(
+      'DELETE FROM user_scope WHERE userId = ? AND scopeId = 15',
+      [currentUserId]
+    );
+
+    await db.promise().query(
+      'INSERT INTO user_scope (userId, scopeId) VALUES (?, 15)',
+      [targetUserId]
+    );
+
+    return this.getScopes(targetUserId);
+  } 
+  
 }
 
 module.exports = UsersService;
