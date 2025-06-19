@@ -251,8 +251,6 @@ class IdeasService {
       [id]
     );
 
-    console.log(`Status of idea ${idea.title} updated to ${newStatus}`);
-
     if (newStatus === 2) {
         await createNewsEntry(
           `Idea ${idea.title} is pending school administration review`,
