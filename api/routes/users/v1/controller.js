@@ -27,7 +27,6 @@ class UsersController {
 
     const data = {
       preferred_language: req.body.preferred_language,
-      profile_picture: req.file ? `/uploads/${req.file.filename}` : null
     };
 
     const updated = await this.service.update(req.params.id, data);

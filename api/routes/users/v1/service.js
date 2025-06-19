@@ -28,8 +28,8 @@ class UsersService {
   }
 
   async update(id, data) {
-    const { preferred_language, profile_picture } = data
-    if (!preferred_language && !profile_picture) {
+    const { preferred_language } = data
+    if (!preferred_language) {
       throw new Error('At least one field must be provided for update');
     } else {
       const updates = [];
@@ -38,10 +38,6 @@ class UsersService {
       if (preferred_language) {
         updates.push('lang = ?');
         values.push(preferred_language);
-      }
-      if (profile_picture) {
-        updates.push('profile_picture = ?');
-        values.push(profile_picture);
       }
 
       values.push(id);
@@ -56,7 +52,7 @@ class UsersService {
       await db.promise().execute('INSERT IGNORE INTO user_scope (userId, scopeId) VALUES (?, 1)', [id]);
     } else if (active === false) {
       await db.promise().execute('DELETE FROM user_scope WHERE userId = ? AND scopeId = 1', [id]);
-      await db.promise().execute('DELETE FROM sessions WHERE userId = ?', [id]);
+      await db.promise().execute('DELETE FROM session WHERE userId = ?', [id]);
     }
     return this.getById(id);
   }
