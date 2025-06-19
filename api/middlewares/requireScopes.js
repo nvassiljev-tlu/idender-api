@@ -52,8 +52,10 @@ function requireScopes(requiredScopeNames = []) {
       // Special logic for scope ID 3
       const hasScope3 = userScopeIds.includes(3);
       if (hasScope3) {
-        // Treat user as having all scope IDs except 2
-        userScopeIds = scopes.map((s) => s.id).filter((id) => id !== 2);
+        // Treat user as having all scope IDs except 2 and 15
+        userScopeIds = scopes
+          .filter((s) => s.id !== 2 && s.id !== 15)
+          .map((s) => s.id);
       }
 
       const hasAllScopes = requiredScopeIds.every((reqId) => userScopeIds.includes(reqId));
