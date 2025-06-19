@@ -246,6 +246,10 @@ class IdeasService {
     if (result.affectedRows === 0) {
       throw new Error('Failed to update status');
     }
+    const [[idea]] = await db.promise().query(
+      'SELECT * FROM suggestions WHERE id = ?',
+      [id]
+    );
 
     if (newStatus === 2) {
         createNewsEntry(
